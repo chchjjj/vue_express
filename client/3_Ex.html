@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(243, 221, 240);
+        }
+
+        tr:nth-child{
+            background-color: rgb(238, 238, 194);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+        <!-- 반복문 -->
+
+        <!--jsonList에서 "홍길동" 출력하고 싶다면-->
+        <!-- 홍길동이 있는 맵에 접근하려면 인덱스 관점, 즉 0번째에서 접근하고 
+         name 이라는 key가 갖고있으니 아래와 같이 작성 -->
+         {{jsonList[0].name}}
+
+        <!--그러나 위 방법은 비효율적인 하드코딩임. (인덱스 순서 모를 수도 있고)-->
+        <!--그래서 반복문을 활용하는 것이 좋다!-->
+        <div v-for="item in strList">
+            {{item}} 
+            <!--해당 변수list 값들에 순차적 접근-->
+            <!-- for문에 'item'이라는 임의 이름에 담았기 때문에 {{item}} 이라고 쓴 것-->
+            <!--보편 적으로 보통 개발자들이 item이라고 쓰기 때문에 쓴 것 뿐임 -->
+        </div>
+
+        <!-- 다른 케이스 (인덱스 값 활용도 가능)-->
+        <div v-for="(item, index) in strList">
+            {{index+1}}. {{item}}             
+        </div>
+
+        <!-- 이번엔 item에 맵이 들어간 형태 반복해보기 -->
+        <!-- 맵형태는 key 값으로 접근해야한다. (그냥 {{item}} 하면 맵상태로만 나옴)-->
+        <div v-for="item in jsonList">
+            {{item.name}}, {{item.age}}, {{item.addr}}            
+        </div>
+
+        <!-- 테이블 형태로 출력해보기 -->
+         <table>
+            <tr>
+                <th>이름</th>
+                <th>이름2</th>
+                <th>나이</th>
+                <th>주소</th>
+            </tr>
+            <!-- 반복문 활용하여 표 만들기 -->
+            <tr v-for="item in jsonList">
+                <!-- 이름 클릭시 정보 알림창으로 뜨도록 하기 -->
+                <!-- 주의) /함수는 내가 이름 클릭 시 누굴 클릭했는지 모르므로
+                     파라미터로 뭘 클릭했는지 정보를 보내줘야함 !!! -->
+                <td><a href="javascript:;" @click="fnInfo(item.name, item.age, item.addr)">{{item.name}}</a></td>
+                <td><a href="javascript:;" @click="fnInfo2(item)">{{item.name}}</a></td>
+                <td>{{item.age}}</td>                
+                <td>
+                    <!-- 추가) 나이가 25 이상이면 주소를 파란색으로 출력 -->
+                    <!-- item.age 라고 해줘야함. 그리고 td 태그에 적용하는게 아님--> 
+                    <span v-if="item.age >=25" style="color:blue;">{{item.addr}}</span>
+                    <span v-else>{{item.addr}}</span>
+                </td>
+            </tr>
+         </table>
+
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                strList : ["자바", "오라클", "html", "jquery"],
+                jsonList : [
+                    {name : "홍길동", age : 30, addr : "인천"},
+                    {name : "김철수", age : 25, addr : "서울"},
+                    {name : "박영희", age : 20, addr : "제주도"} // 맵이 담긴 형태
+                ]
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+            fnUserList: function () {
+                let self = this;
+                $.ajax({
+                    url: "",
+                    dataType: "json",
+                    type: "GET",
+                    data: {},
+                    success: function (data) {
+
+                    }
+                });
+            },
+
+            // 이름 클릭시 정보 뜨게하는 함수
+            // 위에서 값을 3개 보냈으니 받을 때도 3개 받음
+            fnInfo: function (name, age, addr){    
+                alert(`${name}님의 나이는 ${age}, 주소는 ${addr}입니다.`);
+            },
+
+            fnInfo2: function (info){ 
+            // 호출할 때 이름과 받을 때 이름을 다르게 받아도 된다. 
+            // (보낼 땐 item, 받을 땐 info)
+               alert(`${info.name}님의 나이는 ${info.age}, 주소는 ${info.addr}입니다.`);               
+
+            }
+
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+        }
+    });
+
+    app.mount('#app');
+</script>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: lemonchiffon;
+        }
+
+        tr:nth-child{
+            background-color: beige;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+
+        <!-- 함수 통해 받은 data에서 이름들만 출력되도록 하기 -->
+        <!-- 항상 참고 ) 서버쪽에 지정된 이름을 가져올 때도 맞춰줘야 함 --> 
+
+        <!-- html은 사용자 입장이므로 브라우저에 띄우기 위해 서버에 요청하는 것. 
+             보통은 다른 pc가 서버 역할을 할 것임. 서버는 요청받은 내용을 리턴해주는데,
+             이때 서버는 조회한 값을 서버에 지정된 이름으로 되돌려줌 -->
+       <!-- <div v-for="item in list"> 
+            {{item.ENAME}}
+            {{item}}은 현재 맵 형태로 되어있음. 컬럼명 맞춰서 뒤에 저렇게 써줘야함. 
+        </div> -->
+
+        <!-- ----------------------------- -->
+
+        <!-- 부서는 부서명으로 풀고, 급여 내림차순으로 출력해보기 -->
+        <!-- => 오라클(DB)에서 이너조인 및 정렬내용 작성 후 서버에 내용 수정 -->
+        <table>
+            <tr>
+                <th>사번</th>
+                <th>이름</th>
+                <th>직책</th>
+                <th>급여</th>
+                <th>부서</th>
+            </tr>
+            <tr v-for="item in list">
+                <td>{{item.EMPNO}}</td>
+                <td>{{item.ENAME}}</td>
+                <td>{{item.JOB}}</td>
+                <td>{{item.SAL}}</td>
+                <td>{{item.DNAME}}</td>
+            </tr>
+        </table>   
+
+
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                list : []
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+            fnEmpList: function () {
+                let self = this;
+                $.ajax({
+                    url: "http://localhost:3009/emp/list", 
+                    dataType: "json", // 내가 리턴받는 데이터 타입
+                    type: "GET", //주소에 값 담아 보낸다 (?)
+                    data: {}, // 서버 호출결과값이 담기는 곳 
+                    // 이건 methods{} 안에서만 쓸 수 있는 지역변수. 
+                    // 그래서 body영역에서 쓰고 싶으면 변수쪽에서 선언해둬야 함.
+                    success: function (data) {
+                        self.list = data.empList;
+                        // 변수 list에 서버에서 json 형태로 리턴된 empList의 데이터 값을 넣는것
+                        // empList는 서버에 지정된 이름이기 때문에(약속) 이건 맘대로 바꿀 수 없음
+                    }
+                });
+            }
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.fnEmpList();
+        }
+    });
+
+    app.mount('#app');
+</script>
