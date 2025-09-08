@@ -27,6 +27,26 @@
 <body>
     <div id="app">
         <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+        <table>
+            <tr>
+                <th>교수번호</th>
+                <th>이름</th>
+                <th>아이디</th>
+                <th>직급</th>
+                <th>급여</th>
+                <th>삭제</th>
+            </tr>
+            <tr v-for="item in list">
+                <td>{{item.PROFNO}}</td>
+                <td>{{item.NAME}}</td>
+                <td>{{item.ID}}</td>
+                <td>{{item.POSITION}}</td>
+                <td>{{item.PAY}}</td>
+                <td><button @click="fnRemove(item.PROFNO)">삭제</button></td>
+            </tr>
+        </table>
+
+
     </div>
 </body>
 </html>
@@ -36,6 +56,7 @@
         data() {
             return {
                 // 변수 - (key : value)
+                list : []
             };
         },
         methods: {
@@ -44,19 +65,40 @@
                 let self = this;
                 let param = {};
                 $.ajax({
-                    url: "http://localhost:3009/",
+                    url: "http://localhost:3009/prof/list",
                     dataType: "json",
                     type: "GET",
                     data: {},
                     success: function (data) {
-
+                        self.list = data.profList;
                     }
                 });
+            },
+
+            fnRemove: function(profNo){
+                let self = this;
+                if(!confirm("정말 삭제?")){
+                    return;
+                }
+                $.ajax({
+                    url: "http://localhost:3009/prof/delete", 
+                    dataType: "json", // 내가 리턴받는 데이터 타입
+                    type: "GET", 
+                    data: {profNo : profNo}, // 서버 호출결과값이 담기는 곳 
+                    success: function (data) {
+                        if(data.result == "success"){
+                            alert("삭제되었습니다.");
+                            self.fnList();
+                        }
+                    }
+                });
+
             }
         }, // methods
         mounted() {
             // 처음 시작할 때 실행되는 부분
             let self = this;
+            self.fnList();
         }
     });
 

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        #app{
+            width: 600px;
+            margin: 30px auto;
+        }
+
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+            width: 100px;
+        }
+
+        td{
+            width: 300px;
+        }
+
+        .check-btn{
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+         <table>
+            <tr>
+                <th>사번</th>
+                <td>
+                    <!--'수정' 눌러서 들어가면 사번,중복체크 비활성화 / '추가'로 들어갔을 때만 활성화-->
+                    <span v-if="empNo !=''"><input type="text" v-model="info.empNo" disabled><button class="check-btn" disabled>중복체크</button></span>
+                    <span v-else><input type="text" v-model="info.empNo"><button class="check-btn">중복체크</button></span>
+                </td>
+            </tr>
+            <tr>
+                <th>이름</th>
+                <td><input type="text" v-model="info.eName"></td>
+            </tr>
+            <tr>
+                <th>직책</th>
+                <td><input type="text" v-model="info.job"></td>
+            </tr>
+            <tr>
+                <th>부서</th>
+                <td>
+                    <!--참고) 뷰에선 checked 해서 기본값이 찍혀있어도 그 값은 안들어가있음-->
+                    <!--값까지 기본 체크된 상태로 넣고싶다면 변수 info{selectDept : "10"} --> 
+                    <label><input type="radio" value="10" v-model="info.selectDept">ACCOUNTING</label>
+                    <label><input type="radio" value="20" v-model="info.selectDept">RESEARCH</label>
+                    <br>
+                    <label><input type="radio" value="30" v-model="info.selectDept">SALES</label>
+                    <label><input type="radio" value="40" v-model="info.selectDept">OPERATIONS</label>
+                </td>
+            </tr>
+         </table>
+         <div>
+            <button @click="fnAdd">추가</button>
+         </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                info : {
+                    selectDept : "10"
+                },
+
+                empNo : ""
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+            fnAdd: function () {
+                let self = this;
+                // db에서 empNo 값 크기가 4로 고정되어 있으므로 여기서도 조건걸기(안하면 오류남)
+                if(self.info.empNo.length != 4){
+                    alert("사번은 4글자입니다.");
+                    return;
+                    // 여기서 숫자만 되게 하려면 정규식 넣어서 추가하기
+                }            
+                
+                $.ajax({
+                    url: "http://localhost:3009/emp/insert",
+                    dataType: "json",
+                    type: "GET",
+                    data: self.info,
+                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
+                    success: function (data) {
+                        alert("추가되었습니다.");
+                        location.href="emp-list.html";
+                    }
+                });
+            },
+
+            // 수정버튼 눌렀을 때 함수
+            fnInfo: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/emp/info",
+                    dataType: "json",
+                    type: "GET",
+                    data: {empNo : self.empNo},
+                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
+                    success: function (data) {
+                        self.info = data.info; 
+                        // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
+                        
+                    }
+                });
+            }
+            
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            const queryParams = new URLSearchParams(window.location.search);
+            self.empNo = queryParams.get('empNo') || ''; 
+
+            if(self.empNo != ""){ // self.empNo가 빈값이 아니라면 (값이 들어가있다면)
+                self.fnInfo(); // 이 함수 바로 실행
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>

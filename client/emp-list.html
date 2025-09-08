@@ -19,7 +19,7 @@
             background-color: lemonchiffon;
         }
 
-        tr:nth-child{
+        tr:nth-child(even){
             background-color: beige;
         }
     </style>
@@ -50,6 +50,8 @@
                 <th>직책</th>
                 <th>급여</th>
                 <th>부서</th>
+                <th>수정</th>
+                <th>삭제</th>
             </tr>
             <tr v-for="item in list">
                 <td>{{item.EMPNO}}</td>
@@ -57,9 +59,13 @@
                 <td>{{item.JOB}}</td>
                 <td>{{item.SAL}}</td>
                 <td>{{item.DNAME}}</td>
+                <td><button @click="fnEdit(item.EMPNO)">수정</button></td>
+                <td><button @click="fnRemove(item.EMPNO)">삭제</button></td>
             </tr>
         </table>   
-
+        <div>
+            <a href="emp-edit.html"><button>추가</button></a>
+        </div>
 
     </div>
 </body>
@@ -90,7 +96,33 @@
                         // empList는 서버에 지정된 이름이기 때문에(약속) 이건 맘대로 바꿀 수 없음
                     }
                 });
+            },
+
+            fnRemove: function(empNo){
+                let self = this;
+                if(!confirm("정말 삭제하시겠습니까?")){
+                    return;
+                }   
+
+                $.ajax({
+                    url: "http://localhost:3009/emp/delete", 
+                    dataType: "json", // 내가 리턴받는 데이터 타입
+                    type: "GET", 
+                    data: {empNo : empNo}, // 서버 호출결과값이 담기는 곳 
+                    success: function (data) {
+                        if(data.result == "success"){
+                            alert("삭제되었습니다.");
+                            self.fnEmpList();
+                        }
+                    }
+                });
+            },
+
+            fnEdit: function(empNo){
+                // 페이지 넘어갈 때 empNo값 같이 보내주기
+                location.href="emp-edit.html?empNo="+empNo;
             }
+
         }, // methods
         mounted() {
             // 처음 시작할 때 실행되는 부분
