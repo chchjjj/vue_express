@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 차트 관련 스크립트 추가! -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+
+        <!-- 쉬어가는 타이밍 / 차트 관련 (구글: apexcharts - 뷰는 버전2까지만 제공이라 js꺼에서 활용)-->
+        <!-- 현업에서 '관리적' 측면에서 통계 내야할 상황이 꽤 있음 (매출, 특정 이벤트 등)-->
+        <div id="chart">
+
+        </div>
+
+
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+
+                // 차트 코드 내용 변수 영역에 넣기
+                // 키 : 밸류 형태이므로 options = 은 options : 으로 바꿔주기
+                options : {
+                series: [{
+                    name: "Desktops",
+                    data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
+                    
+                }],
+                chart: {
+                    height: 350,
+                    type: 'line',
+                    zoom: {
+                        enabled: false
+                    }
+                },
+
+                dataLabels: {
+                    enabled: false
+                },
+
+                stroke: {
+                    curve: 'straight'
+                },
+
+                title: {
+                    text: 'test in class',
+                    align: 'left'
+                },
+
+                grid: {
+                    row: {
+                        colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+                        opacity: 0.5
+                    },
+                },
+                xaxis: {
+                    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                }
+            }
+
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+            fnList: function () {
+                let self = this;
+                let param = {};
+                $.ajax({
+                    url: "http://localhost:3009/",
+                    dataType: "json",
+                    type: "GET",
+                    data: {},
+                    success: function (data) {
+
+                    }
+                });
+            }
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            // id chart를 가진 애를 그릴 때 option을 참고하겠다는 내용
+            // 해당 사이트 내 스크립트 맨 밑 두줄임. 그리고 option앞에 self 붙여줌.
+            var chart = new ApexCharts(document.querySelector("#chart"), self.options);
+            chart.render();
+        }
+    });
+
+    app.mount('#app');
+</script>

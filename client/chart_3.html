@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> 
+    <!-- 차트 관련하여, 차트 사이트 스크립트 추가! -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+
+        <!-- 차트 이미지 (구글: apexcharts - 뷰는 버전2까지만 제공이라 js꺼에서 활용)-->
+        <!-- PROFESSOR 테이블 활용하여 원형 차트 넣기(교수별 급여) -->
+        <!-- 기존 옵션에 들어가 있던 데이터 내용 지우고 정정하기 -->
+
+
+        <div id="chart"> 
+            <!-- 차트사이트에서 복사해온 차트실행 스크립트 충족 위해 id 생성 -->
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+            // 변수 - (key : value)
+
+                options : {
+                    series: [], // 원래 내용있었는데 지움! 
+                    chart: {
+                        width: 480,
+                        type: 'pie',
+                    },
+                    labels: [], // 원래 내용있었는데 지움! 
+                    responsive: [{
+                        breakpoint: 480,
+                        options: {
+                            chart: {
+                                width: 200
+                            },
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }]
+                }
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+            
+            // prof-list.html 화면에서 메소드 긁어온 후 일부 수정
+            fnList: function () {
+                let self = this;
+                let param = {};
+                $.ajax({
+                    url: "http://localhost:3009/prof/list",
+                    dataType: "json",
+                    type: "GET",
+                    data: {position : self.position}, // 여기 넣는 의미 헷갈 position을 키값으로 보내고...
+                    success: function (data) {
+                        
+                        // 차트 속 옵션별 값 [] 리스트 내용을 지웠기 때문에
+                        // 아래와 같이 재정의 필요없음!!!!!! 주석처리함.
+                        // let professorList = [];
+                        // let payList = [];
+
+                        // ↓ 앞에 data. 하고 붙는거 주의 (profList 는 서버에서 리턴하기로 한 이름)
+                        // 따로 옵션 내 속성들에 대해 재정의 하지 않았으므로
+                        // for문 안에 바로 push하여 값들 넣어주면 됨 (자바스크립트에서 리스트에 값 넣을 땐 push로 넣는다!)
+                        for(i=0; i<data.profList.length; i++){
+                            self.options.series.push(data.profList[i].PAY);
+                            self.options.labels.push(data.profList[i].NAME);                        }
+
+                        
+                        // 차트실행
+                        var chart = new ApexCharts(document.querySelector("#chart"), self.options);
+                        chart.render(); 
+                    }
+                });
+            }
+
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.fnList();
+        }
+    });
+
+    app.mount('#app');
+</script>

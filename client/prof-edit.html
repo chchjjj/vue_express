@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+         <table>
+            <tr>
+                <th>교수번호</th>
+                <td><input v-model="info.profNo" disabled></td>
+            </tr>
+            <tr>
+                <th>이름</th>
+                <td><input v-model="info.name"></td>
+            </tr>
+            <tr>
+                <th>아이디</th>
+                <td><input v-model="info.id"></td>
+            </tr>
+            <tr>
+                <th>직급</th>
+                <td><input v-model="info.position"></td>
+            </tr>
+            <tr>
+                <th>급여</th>
+                <td><input v-model="info.pay"></td>
+            </tr>        
+         </table>
+         <button @click="fnEdit">수정</button>
+
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                info : []
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            // 수정버튼 눌렀을 때 교수번호 통해서 기존입력값들 데려오는거
+            fnInfo: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/prof/info",
+                    dataType: "json",
+                    type: "GET",
+                    data: {profNo : self.profNo},
+                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
+                    success: function (data) {
+                        self.info = data.info; 
+                        // 데이터에 있던 값(교수번호,이름,아디,직급,급여)이 한번에 딸려옴
+                        
+                    }
+                });
+            },
+
+            // 최종 수정 버튼 눌렀을 때
+            fnEdit: function (){
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/prof/update",
+                    dataType: "json",
+                    type: "GET",
+                    data: self.info,
+                    // 이미 self.info에 모든 값들이 다 들어가 있음
+                    // 원래는 항목별로 각각 { } 안에 적거나 변수 하나 빼서 넣어야 하는데
+                    // info라는 맵에 이미 v-model 통해 다 들어가 있음!
+                    success: function (data) {                        
+                        alert("수정되었습니다.");
+                        location.href="prof-list.html";
+                    }
+                });
+            }
+
+        }, // methods
+
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            const queryParams = new URLSearchParams(window.location.search);
+            self.profNo = queryParams.get('profNo') || ''; 
+
+            if(self.profNo != ""){ // self.profNo가 빈값이 아니라면 (값이 들어가있다면)
+                self.fnInfo(); // 이 함수 바로 실행
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>

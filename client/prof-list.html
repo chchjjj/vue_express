@@ -22,11 +22,29 @@
         tr:nth-child(even){
             background-color: beige;
         }
+
+        #p-filter{
+            margin-bottom: 10px;
+            text-align: center;
+            height: 25px;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+
+        <!-- 조회 필터링(포지션별) 추가하기 -->
+         <div>
+            <select id="p-filter" v-model="position" @change="fnList">
+                <option value="">:: 전체 ::</option>
+                <option value="정교수">정교수</option>
+                <option value="조교수">조교수</option>
+                <option value="전임강사">전임강사</option>
+            </select>
+         </div>
+
+
         <table>
             <tr>
                 <th>교수번호</th>
@@ -34,6 +52,7 @@
                 <th>아이디</th>
                 <th>직급</th>
                 <th>급여</th>
+                <th>수정</th>
                 <th>삭제</th>
             </tr>
             <tr v-for="item in list">
@@ -42,6 +61,7 @@
                 <td>{{item.ID}}</td>
                 <td>{{item.POSITION}}</td>
                 <td>{{item.PAY}}</td>
+                <td><button @click="fnEdit(item.PROFNO)">수정</button></td>
                 <td><button @click="fnRemove(item.PROFNO)">삭제</button></td>
             </tr>
         </table>
@@ -56,7 +76,8 @@
         data() {
             return {
                 // 변수 - (key : value)
-                list : []
+                list : [],
+                position : ""
             };
         },
         methods: {
@@ -68,7 +89,7 @@
                     url: "http://localhost:3009/prof/list",
                     dataType: "json",
                     type: "GET",
-                    data: {},
+                    data: {position : self.position}, // 여기 넣는 의미 헷갈 position을 키값으로 보내고...
                     success: function (data) {
                         self.list = data.profList;
                     }
@@ -93,7 +114,13 @@
                     }
                 });
 
+            },
+
+            fnEdit: function(profNo){
+                location.href="prof-edit.html?profNo="+profNo;
+            
             }
+            
         }, // methods
         mounted() {
             // 처음 시작할 때 실행되는 부분

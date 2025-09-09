@@ -40,8 +40,9 @@
             <tr>
                 <th>사번</th>
                 <td>
-                    <!--'수정' 눌러서 들어가면 사번,중복체크 비활성화 / '추가'로 들어갔을 때만 활성화-->
-                    <span v-if="empNo !=''"><input type="text" v-model="info.empNo" disabled><button class="check-btn" disabled>중복체크</button></span>
+                    <!--'수정' 눌러서 들어가면 사번란 비활성화, 중복체크 버튼 없앰
+                         / '추가'로 들어갔을 때만 활성화-->
+                    <span v-if="empNo !=''"><input type="text" v-model="info.empNo" disabled></span>
                     <span v-else><input type="text" v-model="info.empNo"><button class="check-btn">중복체크</button></span>
                 </td>
             </tr>
@@ -67,7 +68,8 @@
             </tr>
          </table>
          <div>
-            <button @click="fnAdd">추가</button>
+            <button v-if="empNo == ''" @click="fnAdd">추가</button>
+            <button v-else @click="fnEdit">수정</button>
          </div>
     </div>
 </body>
@@ -109,7 +111,7 @@
                 });
             },
 
-            // 수정버튼 눌렀을 때 함수
+            // '추가'버튼 눌렀을 때 함수
             fnInfo: function () {
                 let self = this;           
                 
@@ -125,12 +127,33 @@
                         
                     }
                 });
+            },
+
+            // 목록 > 수정버튼 누르고 > 그 안에서 또 '수정'버튼 눌렀을 때 함수
+            fnEdit: function (){
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/emp/update",
+                    dataType: "json",
+                    type: "GET",
+                    data: self.info,
+                    // 이미 self.info에 모든 값들이 다 들어가 있음
+                    // 원래는 뭐 empNo : self.info.empNO, eName : self.info.eName ...
+                    // 이렇게 다 { } 안에 적거나 변수 하나 빼서 넣어야 하는데
+                    // info라는 맵에 이미 다 들어가 있음! (다시 잘 살펴보기)
+                    success: function (data) {                        
+                        alert("수정되었습니다.");
+                        location.href="emp-list.html";
+                    }
+                });
             }
             
         }, // methods
         mounted() {
             // 처음 시작할 때 실행되는 부분
             let self = this;
+            // 파라미터 받아오는 구문!(아래두줄)
             const queryParams = new URLSearchParams(window.location.search);
             self.empNo = queryParams.get('empNo') || ''; 
 

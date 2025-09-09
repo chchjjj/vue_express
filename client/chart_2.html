@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 차트 관련 스크립트 추가! -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+
+        <!-- 차트 이미지 (구글: apexcharts - 뷰는 버전2까지만 제공이라 js꺼에서 활용)-->
+        <!-- EMP 테이블 활용하여 막대 차트 내용 넣기 -->
+        <!-- 기존 옵션에 들어가 있던 데이터 내용 지우지 않고 정정하기 -->
+
+        
+        <div id="chart">
+
+        </div>
+
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+            // 변수 - (key : value)
+
+            // 차트 코드 내용 변수 영역에 넣기
+            // 키 : 밸류 형태이므로 options = 은 options : 으로 바꿔주기
+            options : {
+                series: [{
+                    name: 'Inflation',
+                    data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6, 3.2, 2.3, 1.4, 0.8, 0.5, 0.2]
+                    // 위 data [] 안 값들을 바꾸려면 series(맵형태)의 인덱스0 값 속 data 값 바꾸면 됨
+                    // 기존 내용 안지우고 해도 되는듯?
+                }],
+                chart: {
+                    height: 350,
+                    type: 'bar',
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 10,
+                        dataLabels: {
+                            position: 'top', // top, center, bottom
+                        },
+                    }
+                },
+
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val) {
+                        return val + "$";
+                    },
+                    offsetY: -20,
+                    style: {
+                        fontSize: '12px',
+                        colors: ["#304758"]
+                    }
+                },
+                    
+                xaxis: {
+                    categories: [], // 원래 내용 있었는데 지움! 내용 있었다고 치고
+                    position: 'top',
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    },
+                    crosshairs: {
+                        fill: {
+                            type: 'gradient',
+                            gradient: {
+                                colorFrom: '#D8E3F0',
+                                colorTo: '#BED1E6',
+                                stops: [0, 100],
+                                opacityFrom: 0.4,
+                                opacityTo: 0.5,
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                    }
+                },
+                yaxis: {
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false,
+                    },
+                    labels: {
+                        show: false,
+                        formatter: function (val) {
+                        return val + "%";
+                        }
+                    }
+                    
+                },
+                title: {
+                    text: 'Monthly Inflation in Argentina, 2002',
+                    floating: true,
+                    offsetY: 330,
+                    align: 'center',
+                    style: {
+                        color: '#444'
+                    }
+                }
+            }
+
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            fnEmpList: function () {
+                let self = this;
+                $.ajax({
+                    url: "http://localhost:3009/emp/list", 
+                    dataType: "json", // 내가 리턴받는 데이터 타입
+                    type: "GET", //주소에 값 담아 보낸다 (?)
+                    data: {deptNo : self.deptNo}, // 서버 호출결과값이 담기는 곳 
+                    // 이건 methods{} 안에서만 쓸 수 있는 지역변수. 
+                    // 그래서 body영역에서 쓰고 싶으면 변수쪽에서 선언해둬야 함.
+                    // { } 안 값이 파라미터값으로 서버에 넘어감.
+                    success: function (data) {
+                        
+                        // option에 원하는 데이터 넣은 후
+                        self.options.title.text="직원별 급여 조회";
+                        
+                        // [] 리스트 재정의하는 이유 : 
+                        // 위에서 data, categories 두곳의 [] 리스트에 값이 있었기 때문!!
+                        let salList = [];
+                        let nameList = [];
+                        for(let i=0; i<data.empList.length; i++){
+                            salList.push(data.empList[i].SAL);
+                            // empList의 한줄씩 값들을 돌면서 그 중 SAL에 있는 값 골라서 넣기
+                            // 자바스크립트에서 리스트에 값 넣을 땐 push로 넣는다!
+                            nameList.push(data.empList[i].ENAME);
+                            // empList의 한줄씩 값들을 돌면서 그 중 ENAME 있는 값 골라서 넣기
+                        }
+                        
+                        self.options.series[0].data = salList;                        
+                        self.options.xaxis.categories = nameList;
+
+                        // 차트실행
+                        var chart = new ApexCharts(document.querySelector("#chart"), self.options);
+                        chart.render(); 
+                    }
+                });
+            }
+
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this; 
+            self.fnEmpList();           
+        }   
+    });
+
+    app.mount('#app');
+</script>
