@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        table, tr, td, th{
+            border : 1px solid black;
+            border-collapse: collapse;
+            padding : 5px 10px;
+            text-align: center;
+        }
+        th{
+            background-color: beige;
+        }
+        tr:nth-child(even){
+            background-color: azure;
+        }
+
+        #title{
+            cursor: pointer;
+        }
+
+        .index{ /* 페이징 */
+            margin-right: 10px; /* 숫자 간 간격*/
+            text-decoration: none; /* 숫자 밑줄 지우기 */
+            color: black;
+            font-size: 25px;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+    <div id="app">
+         <!-- 상단 왼쪽에 게시글 몇개씩 페이징 할건지 선택 -->       
+         <!-- 선택할 때마다, 즉 값이 바뀔 때마다 실행해야하므로 @change, 리스트 재호출 -->
+         <!-- 추가) 몇개씩인지 누를때마다 다시 1페이지부터 조회되도록 
+            =>  @change에 새로운 함수 호출해서 페이지를 1로 지정 후 리스트 호출 --> 
+         <select v-model="pageSize" @change="fnChangePage">
+            <option value="5">:: 5개씩 ::</option>
+            <option value="7">:: 7개씩 ::</option>
+            <option value="10">:: 10개씩 ::</option>
+         </select>
+         <table>
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>조회수</th>
+                <th>작성일</th>
+            </tr>
+            <tr v-for="item in list">
+                <td>{{item.BOARDNO}}</td>
+                <!-- boardNo 값을 넘겨줘야 함! 괄호안에 저거 item 붙여야함 ㅠㅠ -->
+                <td><a href="javascript:;" @click="fnView(item.BOARDNO)">{{item.TITLE}}</a></td>
+                <td>{{item.USERID}}</td>
+                <td>{{item.CNT}}</td>
+                <td>{{item.CDATE}}</td>
+            </tr>
+         </table>
+         
+         <!-- 페이지 숫자 양옆으로 < > 화살표 넣고 페이지 하나씩 이동할 수 있게 -->
+        <!-- 근데 -1, +1씩 하며 왔다갔다하므로 양옆으로 마지노선을 정해줘야함(안하면 끝도없이 이동)
+            1페이지일 땐 왼쪽 화살표 안보이게 & 마지막 페이지일 땐 오른쪽 화살표 안보이게 -->
+         <a v-if="page != 1" class=index href="javascript:;" @click="fnMove(-1)">◀</a>
+
+        <!-- 페이징 (클릭할 수 있게 a 태그로)/ 클릭한 현재페이지로 스타일 바꿔주기 -->
+        <!-- for문 반복할 떈 id말고 클래스로 써야함 이유는 못들음 --> 
+        <a class=index href="javascript:;" v-for="num in index" @click="fnPage(num)">
+            <!-- 인덱스 숫자만큼 반복 돌면서 숫자(페이지) 찍기-->
+
+            <!-- num 숫자와 변수 page(현재페이지)가 같다면 스타일 주기 -->
+            <span v-if="num == page" style="color: red; font-weight: bold;">{{num}}</span> 
+            <span v-else>{{num}}</span>
+        </a> 
+
+        <!-- 마지막 페이지일 땐 오른쪽 화살표 안보이게 -->
+        <a v-if="page != index" class=index href="javascript:;" @click="fnMove(1)">▶</a>
+
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                list : [],
+                index : 0, // 표현할 페이지 개수
+                pageSize : 5, // 한 페이지에 보여줄 게시글 수
+                page : 1 // 현재 페이지(위치)(기본은 1) 구분할 수 있게 스타일 주기
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+            fnList: function () {
+                let self = this;
+                let param = {
+                    pageSize : self.pageSize,
+                    offset : (self.page -1) * self.pageSize
+                    // 몇개씩 건너뛸 것인가 (페이징)
+                };
+                $.ajax({
+                    url: "http://localhost:3009/board/list",
+                    dataType: "json",
+                    type: "GET",
+                    data: param,
+                    success: function (data) {
+                        self.list = data.boardList;
+                        console.log(data);
+                        self.index = Math.ceil(data.count/self.pageSize);
+                        // 총 게시글 개수를 페이지 수로 나누고, 소수점일 경우 올림 처리
+                    }
+                });
+            },
+
+            fnView: function (boardNo){
+                let self = this;
+                location.href="board-view.html?boardNo="+boardNo;
+                // boardNo를 파라미터로 보낼거니까 물음표 이용하여 연결
+            },
+
+            // 페이지 부분에서 숫자 클릭시 리스트를 페이지에 맞게 다시 뜨도록
+            fnPage : function(num){
+                let self = this;
+                self.page = num;
+                self.fnList(); 
+            },
+
+            // 페이지 부분에서 양옆 화살표 클릭 시 한페이지씩 왔다갔다            
+            fnMove : function(move){
+                let self = this;
+                self.page += move;
+                self.fnList(); 
+            },
+
+            // 셀렉트 목록에서 몇개씩 볼지 바꿀때마다 다시 1페이지 기준으로 리스트 불러오는거
+            fnChangePage : function(){
+                let self = this;
+                self.page = 1;
+                self.fnList();
+            }
+
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.fnList();
+        }
+    });
+
+    app.mount('#app');
+</script>

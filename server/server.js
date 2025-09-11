@@ -298,6 +298,90 @@ app.get('/prof/update', async (req, res) => {
 });
 
 
+app.get('/board/list', async (req, res) => {
+  const { pageSize, offset } = req.query;
+  
+  try {
+    const result = await connection.execute(
+      `SELECT B.*, TO_CHAR(CDATETIME, 'YYYY-MM-DD') AS CDATE FROM TBL_BOARD B `
+      +`OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY` // 몇페이지씩 건너뛸건지
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+
+    const count = await connection.execute(
+      `SELECT COUNT(*) FROM TBL_BOARD`
+    );
+
+    // 리턴
+    res.json({
+        result : "success",
+        boardList : rows,
+        count : count.rows[0][0] // 게시글 개수 구하려고 이 내용 추가함
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+
+app.get('/board/add', async (req, res) => {
+  const { kind, title, contents, userId } = req.query;
+
+  try {
+    await connection.execute(
+      // 모든 컬럼 쓸거라서 테이블명 뒤에 (컬럼명) 이렇게 넣는건 생략
+      `INSERT INTO TBL_BOARD VALUES(B_SEQ.NEXTVAL, :title, :contents, :userId, '0', '0', :kind, SYSDATE, SYSDATE)`,
+      [title, contents, userId, kind], // 윗줄에서 :으로 참조할 값 <- 여기 넣기
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
+
+app.get('/board/info', async (req, res) => {
+  const { boardNo } = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT * FROM TBL_BOARD WHERE BOARDNO = ${boardNo}` // 내가 파라미터로 보낸값
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴 (키-밸류 형태)
+    res.json({
+        result : "success",
+        info : rows[0] // 어차피 해당하는 pk값은 하나일테니
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+
 // 서버 시작
 app.listen(3009, () => {
   console.log('Server is running on port 3009');

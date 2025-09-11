@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+         <table>
+            <tr>
+                <th>게시글번호</th>
+                <td>{{info.BOARDNO}}</td>
+            </tr>
+            <tr>
+                <th>제목</th>
+                <td>{{info.TITLE}}</td>
+            </tr>
+            <tr>
+                <th>작성자</th>
+                <td>{{info.USERID}}</td>
+            </tr>
+            <tr>
+                <th>작성일</th>
+                <td>{{info.CDATETIME}}</td>
+            </tr>
+            <tr>
+                <th>내용</th>
+                <td>{{info.CONTENTS}}</td>
+            </tr>   
+            <tr>
+                <th>내용2</th>
+                <td><div v-html="info.CONTENTS"></div></td>
+                <!-- v-html : 텍스트에 태그가 있다면 태그 적용해주고 출력되게 해줌 -->
+            </tr>          
+         </table>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                boardNo : "", // 이걸 변수영역에 만들어줘야 출력가능
+                info : {}
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+            fnInfo: function () {
+                let self = this;
+                // let param = {};
+                $.ajax({
+                    url: "http://localhost:3009/board/info",
+                    dataType: "json",
+                    type: "GET",
+                    data: {boardNo : self.boardNo},
+                    success: function (data) {
+                        self.info = data.info; 
+                        // 데이터에 있던 값들이 한번에 딸려옴
+                    }
+                });
+            }
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            // 파라미터 받아오는 구문!(아래두줄)
+            const queryParams = new URLSearchParams(window.location.search);
+            self.boardNo = queryParams.get('boardNo') || ''; 
+
+            self.fnInfo(); // 팝업 뜨는 순간 바로 실행되도록
+        }
+    });
+
+    app.mount('#app');
+</script>
