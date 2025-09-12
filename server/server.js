@@ -381,6 +381,87 @@ app.get('/board/info', async (req, res) => {
   }
 });
 
+// ================================================================================
+// ★★ 프로젝트 내용 ★★
+
+// 로그인 
+app.get('/pro-login', async (req, res) => {
+  const { empNo, pwd } = req.query;
+  // 아디 & 비번 둘다 일치해야하니까 where 조건문 and로 연결, 문자열이니까 ''로 묶어주기
+  let query = `SELECT * FROM EMPLOYEE WHERE EMPNO = '${empNo}' AND PASSWORD = '${pwd}'`;
+  try {
+    const result = await connection.execute(query);
+    const columnNames = result.metaData.map(column => column.name);
+
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    res.json(rows); // 여기 rows 값이 존재하면, 조건 만족하는 내용이 있다는 뜻 (로그인 가능)
+    // 빈값이라면 정보가 없으니 아디 비번 재확인하라고 안내해주면 되는거
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 로그인 후 첫(베이직)화면
+app.get('/pro-basic', async (req, res) => {
+  const { empNo } = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT * FROM EMPLOYEE WHERE EMPNO = ${empNo}`
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴
+    res.json({
+        result : "success",
+        empList : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+
+// 개인정보 수정 팝업에서 최종 수정 버튼 눌렀을 때
+app.get('/pro-info-update', async (req, res) => {
+  const { empNo, newPwd, midPhone, lastPhone } = req.query;
+
+  try {
+    await connection.execute(
+    `UPDATE EMPLOYEE SET PASSWORD = :newPwd, MOBILE = :mobile WHERE EMPNO = :empNo`,
+      {
+        newPwd: newPwd,
+        mobile: `010-${midPhone}-${lastPhone}`,
+        empNo: empNo
+      },
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
 
 // 서버 시작
 app.listen(3009, () => {

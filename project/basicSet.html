@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+
+        body{
+            background-color: rgb(238, 237, 237);
+        }
+
+        #container{
+            background-color: white;
+            width: 1200px;
+            height: 950px;
+            border: 3px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            /* text-align: center; */
+            
+        }
+
+        .topBtn{
+            margin-top: 30px;
+            margin-right: 30px;
+            text-align: right;
+        }
+
+        #topBtn{
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        .welcome{
+            margin-left: 35px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .menu{
+            width: 1000px;
+            height: 70px;
+            background-color: rgb(124, 206, 161);
+            color: white;
+            margin: 0px 100px;
+            line-height: 70px;
+        }
+
+        .menu span{
+            font-size: 24px;
+            margin: 0px 50px;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div class="topBtn">
+            <span>
+                <button id="topBtn" @click="fnInfoEdit(empNo)">정보수정</button>
+                <button id="topBtn" @click="fnLogout">로그아웃</button>
+            </span>
+        </div>
+        <div class="welcome" v-for="item in list">
+            <div>{{item.ENAME}}님 환영합니다. (권한 : {{item.POSITION}})</div>
+            <div>소속 : {{item.DEPT}}</div>
+        </div>
+
+        <div class="menu">
+            <span>고객조회</span>
+            <span>직원조회</span>
+            <span>상품조회</span>
+            <span>계약관리</span>
+            <span>VOC(민원)</span>
+        </div>
+
+
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                list : [],
+                empNo : ""
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            fnBasic: function () {
+                let self = this;
+                let param = {};
+                $.ajax({
+                    url: "http://localhost:3009/pro-basic",
+                    dataType: "json",
+                    type: "GET",
+                    data: {empNo : self.empNo},
+                    success: function (data) {
+                        self.list = data.empList;
+                    }
+                });
+               
+            },
+
+            // 우측 상단 정보수정 버튼
+            fnInfoEdit: function (empNo) {
+                let self = this;
+                // let param = {};
+                // $.ajax({
+                //     url: "http://localhost:3009/",
+                //     dataType: "json",
+                //     type: "GET",
+                //     data: {},
+                //     success: function (data) {
+
+                //     }
+                // });
+                window.open(`infoEdit.html?empNo=${empNo}`, "infoEdit", "width=800, height=700");
+            },
+
+            // 우측 상단 로그아웃 버튼
+            fnLogout: function(){
+                let self = this;
+                alert("로그아웃 되었습니다.");
+                location.href="login.html";
+            }
+
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.empNo = sessionStorage.getItem("sessionId");
+            self.fnBasic();
+        }
+    });
+
+    app.mount('#app');
+</script>

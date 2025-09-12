@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+
+        #container{
+            width: 700px;
+            height: 600px;
+            border: 2px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;            
+        }
+
+
+        h2{
+            margin-top: 80px;
+            margin-bottom: 40px;
+        }
+
+        .box{
+            width: 400px;
+            height: 500;
+            text-align: left;
+            padding-left: 200px;
+        }
+
+        #info{
+            color: rgb(103, 112, 238);
+            margin-bottom: 50px;
+        }
+
+        input{
+            margin-bottom: 20px;
+            height: 23px;
+            border-radius: 5px;
+            margin-left: 20px;
+        }
+
+        .phone input{
+            width: 40px;
+            margin-left: 5px;
+        }
+
+        button{
+            width: 100px;
+            height: 30px;
+            margin: 10px;
+            background-color: rgb(209, 209, 243);
+            font-size: medium;
+            border: 3px outset;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div><h2>개인정보수정</h2></div>
+
+        <div class="box">
+            <div>
+                사번<input v-model="empNo" disabled>
+            </div>
+            <div>
+                변경 패스워드<input type="password" v-model="newPwd" placeholder="비밀번호는 8자리 이상">
+            </div>
+            <div>
+                패스워드 확인<input type="password" v-model="pwdChk">
+            </div>
+            <div class="phone">
+                연락처 010 - <input v-model="midPhone"> - <input v-model="lastPhone">
+            </div>
+            <div id="info">개명으로 인한 이름 변경은 관리자에게 문의하세요.</div>
+        </div>
+
+        <div>
+            <button @click="fnInfoUpdate">수정</button>
+            <button @click="fnClose">취소</button>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                empNo : "",
+                newPwd : "",
+                pwdChk : "",
+                mobile : "",
+                midPhone : "",
+                lastPhone : "",
+                info : {}
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            // 기존 연락처 내용 가져오기
+            fnInfo: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/pro-basic",
+                    dataType: "json",
+                    type: "GET",
+                    data: {empNo : self.empNo},
+                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
+                    success: function (data) {
+                        self.info = data.empList[0]; 
+                        // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
+                        self.mobile = self.info.MOBILE;
+                        console.log(self.mobile);
+                        self.midPhone = self.mobile.substring(4, 8);
+                        self.lastPhone = self.mobile.substring(9, 13);
+                    }
+                });
+            },
+
+
+            // 개인정보수정 팝업에서 "수정" 버튼
+            fnInfoUpdate:function(){
+                let self = this;
+                let param = {
+                    empNo : self.empNo,
+                    newPwd : self.newPwd,
+                    midPhone : self.midPhone,
+                    lastPhone : self.lastPhone
+                };
+
+                if(self.newPwd.length < 8){
+                    alert("비밀번호는 8자리 이상으로 설정해주세요.");
+                    return;
+                }
+                
+                if(self.newPwd != self.pwdChk){
+                    alert("변경 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+                    return;
+                }
+
+                if(self.newPwd=="" || self.pwdChk=="" || self.midPhone.length=="" || self.lastPhone==""){
+                    alert("빈 값이 있습니다.\n비밀번호나 연락처 중 변경을 원하지 않는 항목이 있다면 \n기존 정보를 입력해주세요.");
+                    return;
+                }
+
+                if(self.midPhone.length != 4 || self.lastPhone.length != 4){
+                    alert("핸드폰 번호를 재확인해주세요.");
+                    return;
+                }
+
+                $.ajax({
+                    url: "http://localhost:3009/pro-info-update",
+                    dataType: "json",
+                    type: "GET",
+                    data: param,
+                    success: function (data) {
+                        alert("수정되었습니다.");
+                        window.close();
+                    }
+                });
+
+            },
+
+            // 개인정보수정 팝업에서 "취소" 버튼
+            fnClose:function(){
+                window.close();
+
+            }
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.empNo = sessionStorage.getItem("sessionId");
+            
+            // 파라미터 받아오는 구문!(아래두줄)
+            const queryParams = new URLSearchParams(window.location.search);
+            self.empNo = queryParams.get('empNo') || ''; 
+
+            if(self.empNo != ""){ // self.empNo가 빈값이 아니라면 (값이 들어가있다면)
+                self.fnInfo(); // 이 함수 바로 실행
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>

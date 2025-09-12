@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+
+        body{
+            background-color: rgb(238, 237, 237);
+        }
+
+        #container{
+            background-color: white;
+            width: 1200px;
+            height: 950px;
+            border: 3px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;
+            
+        }
+
+        h1{
+            margin-top: 170px;
+            margin-bottom: 100px;
+        }
+
+        input{
+            margin-top: 20px;
+            width: 220px;
+            font-size: larger;
+            border: 2px solid rgb(156, 156, 156);
+            border-radius: 5px;
+        }
+
+        .login{
+            font-size: medium;
+            margin : 10px 0;
+        }
+
+        .logo{
+            width: 220px;
+            height: 60px;
+            
+        }
+
+        #info{
+            color: rgb(103, 112, 238);
+            margin-bottom: 10px;
+        }
+
+        #btn{
+            margin-top: 40px;
+            margin-bottom: 50px;
+            width: 300px;
+            height: 40px;
+            border: 2px solid rgb(156, 156, 156);
+            border-radius: 5px;
+            font-size: medium;
+            cursor: pointer;
+        }
+
+        img{
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div><h1>통합관리시스템</h1></div>
+        <div class="login">
+            사번　　<input type="text" v-model="empNo">         
+        </div>
+        <div class="login">  
+            패스워드 <input type="password" v-model="pwd">          
+        </div>
+        <div><button id="btn" @click="fnLogin">로그인</button></div>
+        <div id="info">사번 등록 및 정보 분실 시 관리자 직원에게 문의하세요.</div>
+        <div id="info">(관리자 홍길동 / 내선번호 : 02-1000-1001)</div>
+        <div><img src="media/logo.PNG"></div>
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                empNo : "",
+                pwd : ""
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+            fnLogin: function () {
+                let self = this;
+                let param = {
+                    empNo : self.empNo,
+                    pwd : self.pwd
+                };
+                $.ajax({
+                    url: "http://localhost:3009/pro-login",
+                    dataType: "json",
+                    type: "GET",
+                    data: param,
+                    success: function (data) {
+                        //console.log(data);
+                        if(data.length > 0){
+                            alert(data[0].ENAME + "님 환영합니다.");
+
+                            // 세션 스토리지에 로그인 정보 담기 (setItem은 키,밸류 형태)
+                            sessionStorage.setItem("sessionId", data[0].EMPNO); 
+                            sessionStorage.setItem("sessionStatus", data[0].STATUS); // 권한
+
+                            location.href="basicSet.html";
+                        } else {
+                            alert("사번/패스워드를 확인해주세요.");
+                        }
+                        
+                    }
+                });
+            }
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+        }
+    });
+
+    app.mount('#app');
+</script>
