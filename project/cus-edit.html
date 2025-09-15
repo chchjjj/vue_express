@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객정보 수정</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid rgb(163, 162, 162);            
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: left;
+            padding-left: 30px;
+            width: 600px;
+            margin-bottom: 20px;            
+        }
+
+        th{
+            background-color: rgb(233, 238, 228);
+            width: 200px;
+        }
+  
+        tr:nth-child(even){
+            background-color: beige;
+        }
+
+        #container{
+            width: 1000px;
+            height: 800px;
+            border: 2px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;            
+        }
+
+        h2{
+            margin-top: 80px;
+            margin-bottom: 40px;
+        }
+
+        .box{
+            padding-left: 200px; 
+            margin-bottom: 50px;
+        }
+
+        #info{
+            margin-top: 5px;
+            color: rgb(103, 112, 238);
+            text-align: left;
+        }
+
+        input{
+            height: 20px;
+            border-radius: 5px;
+            font-size: medium;
+            margin-right: 10px;
+        }
+
+        .phone input{
+            width: 40px;
+            margin-left: 5px;
+        }
+
+        .bottomBtn button{
+            width: 100px;
+            height: 30px;
+            margin: 10px;
+            background-color: rgb(209, 209, 243);
+            font-size: medium;
+            border: 3px outset;
+            cursor: pointer;
+        }
+
+        input[type="file"] {
+            height: 30px;
+            line-height: 30px;
+            padding: 2px 5px;            
+            font-size: 14px;
+        }
+
+        form{
+            margin-top: 20px;
+            text-align: left;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div><h2>고객 정보 수정</h2></div>
+
+        <div class="box">
+        <table>
+            <tr>
+                <th>고객번호</th>
+                <td>{{info.cusNo}}</td>
+            </tr>
+            <tr>
+                <th>고객명</th>
+                <td><input v-model="info.cName"></td>
+            </tr>
+            <tr>
+                <th>생년월일</th>
+                <td><input v-model="info.BIR"></td>
+            </tr>
+            <tr>
+                <th>성별</th>
+                <td><input v-model="info.gender"></td>
+            </tr>
+            <tr>
+                <th>휴대전화</th>
+                <td><input v-model="info.phone"></td>
+            </tr>
+            <tr>
+                <th>주소</th>
+                <td><input v-model="info.addr"></td>
+            </tr>
+            <tr>
+                <th>가입상품</th>
+                <td>{{info.P_NAME}}</td>
+            </tr>
+            <tr>
+                <th>고객등록일</th>
+                <td>{{info.SIGNDATE}}</td>
+            </tr>
+         </table>                
+
+         <div id="info">※ 고객명, 생년월일, 성별 변경 시 서류 첨부 필수! (초본(개명이력), 현재 신분증) </div>
+         <div id="info">※ 서류는 변경 시점으로부터 3개월 이내 발급 본이어야하며, 신분증은 진위여부 확인 필수</div>
+        
+         <form @submit.prevent="fnUpload">
+            <input type="file" ref="fileInput" accept="image/*" required />
+         </form>
+
+        </div>
+        
+        <div class="bottomBtn">
+            <button @click="fnDelete(info.cusNo)">고객삭제</button>
+            <button @click="fnUpdate">수정반영</button>
+            <button @click="fnClose">닫기</button>
+        </div>
+
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                cusNo : "",
+                info : {},
+                uploadResult: null // 업로드 결과 저장
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            // 기존 고객 정보 가져오기
+            fnCusInfo: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/cus/info",
+                    dataType: "json",
+                    type: "GET",
+                    data: {cusNo : self.cusNo},
+                    success: function (data) {
+                        self.info = data.info; 
+                        // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
+                        
+                    }
+                });
+            },
+
+            // "수정반영" 버튼
+            fnUpdate: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/cus/update",
+                    dataType: "json",
+                    type: "GET",
+                    data: self.info,
+                    success: function (data) {
+                        alert("수정되었습니다.");
+                        location.href="cus-view.html?cusNo="+self.cusNo;
+                    }
+                });
+            },
+
+            // "고객삭제" 버튼
+            fnDelete: function(cusNo){
+                let self = this;
+                if(!confirm("등록된 고객을 정말 삭제하시겠습니까?\n 소속 팀장 및 관리자와 협의된 내용인지 확인하여 진행 바랍니다.")){
+                    return;
+                }
+                $.ajax({
+                    url: "http://localhost:3009/cus/delete", 
+                    dataType: "json", // 내가 리턴받는 데이터 타입
+                    type: "GET", 
+                    data: {cusNo : cusNo}, // 서버 호출결과값이 담기는 곳 
+                    success: function (data) {
+                        if(data.result == "success"){
+                            alert("고객정보가 삭제되었습니다.");
+                            location.href="customers.html";
+                        }
+                    }
+                });
+               
+            },
+
+            // "닫기" 버튼
+            fnClose:function(){
+                window.close();
+
+            },
+
+            // 이미지 업로드
+            fnUpload: function () {
+            let self = this;
+            let formData = new FormData();
+            let fileInput = this.$refs.fileInput;
+
+            if (fileInput.files.length === 0) {
+                alert("이미지를 선택해주세요.");
+                return;
+            }
+
+            formData.append('image', fileInput.files[0]);
+
+            $.ajax({
+                url: 'http://localhost:3009/upload',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    self.uploadResult = res;
+                },
+                error: function (err) {
+                    alert("업로드 실패");
+                    console.error(err);
+                }
+                });
+            },
+    
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            
+            // 파라미터 받아오는 구문!(아래두줄)
+            const queryParams = new URLSearchParams(window.location.search);
+            self.cusNo = queryParams.get('cusNo') || ''; 
+
+            if(self.cusNo != ""){ // self.empNo가 빈값이 아니라면 (값이 들어가있다면)
+                self.fnCusInfo(); // 이 함수 바로 실행
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>

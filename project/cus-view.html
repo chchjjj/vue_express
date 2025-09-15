@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid rgb(163, 162, 162);            
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: left;
+            padding-left: 30px;
+            width: 500px;
+            
+        }
+
+        th{
+            background-color: rgb(233, 238, 228);
+            width: 150px;
+        }
+  
+        tr:nth-child(even){
+            background-color: beige;
+        }
+
+        #container{
+            width: 1000px;
+            height: 800px;
+            border: 2px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;            
+        }
+
+
+        h2{
+            margin-top: 80px;
+            margin-bottom: 40px;
+        }
+
+        .box{
+            padding-left: 250px; 
+            margin-bottom: 80px;
+        }
+
+        #info{
+            color: rgb(103, 112, 238);
+            margin-bottom: 50px;
+        }
+
+        input{
+            margin-bottom: 20px;
+            height: 23px;
+            border-radius: 5px;
+            margin-left: 20px;
+        }
+
+        .phone input{
+            width: 40px;
+            margin-left: 5px;
+        }
+
+        button{
+            width: 100px;
+            height: 30px;
+            margin: 10px;
+            background-color: rgb(209, 209, 243);
+            font-size: medium;
+            border: 3px outset;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div><h2>고객 상세정보</h2></div>
+
+        <div class="box">
+        <table>
+            <tr>
+                <th>고객번호</th>
+                <td>{{info.CUSNO}}</td>
+            </tr>
+            <tr>
+                <th>고객명</th>
+                <td>{{info.CUSNAME}}</td>
+            </tr>
+            <tr>
+                <th>생년월일</th>
+                <td>{{info.BIR}}</td>
+            </tr>
+            <tr>
+                <th>성별</th>
+                <td>{{info.GENDER}}</td>
+            </tr>
+            <tr>
+                <th>휴대전화</th>
+                <td>{{info.PHONE}}</td>
+            </tr>
+            <tr>
+                <th>주소</th>
+                <td>{{info.ADDRESS}}</td>
+            </tr>
+            <tr>
+                <th>가입상품</th>
+                <td>{{info.P_NAME}}</td>
+            </tr>
+            <tr>
+                <th>고객등록일</th>
+                <td>{{info.SIGNDATE}}</td>
+            </tr>
+        </table>
+        </div>
+
+        <div>
+            <button @click="fnEdit(cusNo)">정보수정</button>
+            <button @click="fnClose">닫기</button>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                cusNo : "",
+                info : {}
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            // 고객 정보 가져오기
+            fnCusInfo: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/cus/info",
+                    dataType: "json",
+                    type: "GET",
+                    data: {cusNo : self.cusNo},
+                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
+                    // empNo를 파라미터로 보내기
+                    success: function (data) {
+                        self.info = data.info; 
+                        // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
+                        
+                    }
+                });
+            },
+
+
+            // "정보수정" 버튼
+            fnEdit:function(cusNo){
+                let self = this;
+                if(self.status == 'P'){
+                    alert("고객정보 수정은 임직원만 가능합니다.");
+                    return;
+                }
+                
+                location.href="cus-edit.html?cusNo="+cusNo;
+            },
+
+            // 팝업에서 "닫기" 버튼
+            fnClose:function(){
+                window.close();
+
+            }
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.status = sessionStorage.getItem("sessionStatus");
+            
+            // 파라미터 받아오는 구문!(아래두줄)
+            const queryParams = new URLSearchParams(window.location.search);
+            self.cusNo = queryParams.get('cusNo') || ''; 
+
+            if(self.cusNo != ""){ // self.empNo가 빈값이 아니라면 (값이 들어가있다면)
+                self.fnCusInfo(); // 이 함수 바로 실행
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const oracledb = require('oracledb');
+const multer = require('multer');
 
 const app = express();
 app.use(cors());
@@ -30,6 +31,37 @@ async function initializeDatabase() {
 }
 
 initializeDatabase();
+
+// 업로드된 파일의 저장 위치 및 이름 설정
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // 업로드 경로
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+  }
+});
+const upload = multer({ storage: storage });
+
+// 이미지 업로드 라우터 추가
+  app.post('/upload', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+  res.send({
+    message: 'Image uploaded successfully!',
+    filename: req.file.filename,
+    path: `/uploads/${req.file.filename}`
+  });
+});
+// 여기서 upload.single('image')에서 'image'는 
+// <input type="file" name="image">의 name 속성과 일치해야 함
+
+// 정적 파일 서빙 설정 (이미지 접근 가능하게)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // 엔드포인트
 app.get('/', (req, res) => {
@@ -439,6 +471,88 @@ app.get('/pro-basic', async (req, res) => {
 });
 
 
+// 고객조회화면
+app.get('/cusList', async (req, res) => {
+  const { offset, pageSize, option, keyword} = req.query;
+  
+  // 검색관련
+  let subQuery = "";
+  if(option == "all"){
+    subQuery = `WHERE CUSNAME LIKE '%${keyword}%' OR PHONE LIKE '%${keyword}%'`;
+  } else if(option == "cusname"){
+    subQuery = `WHERE CUSNAME LIKE '%${keyword}%'`;
+  } else if(option == "phone"){ 
+    subQuery = `WHERE PHONE LIKE '%${keyword}%'`;
+  } // 나중에 다른 옵션이 생길 수 있으니 그냥 else는 x
+
+  try {
+    const result = await connection.execute(
+      `SELECT C.*, TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIR FROM CUSTOMERS C `
+     + `${subQuery} `
+     +`OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY` // 몇페이지씩 건너뛸건지
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+
+    const count = await connection.execute(
+      `SELECT COUNT(*) FROM CUSTOMERS`
+    );
+
+    // 리턴
+    res.json({
+        result : "success",
+        cusList : rows,
+        count : count.rows[0][0] // 게시글 개수 구하려고 이 내용 추가함
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 고객 상세조회
+app.get('/cus/info', async (req, res) => {
+  const { cusNo } = req.query;
+  try {
+    const result = await connection.execute(
+      // 보낸 값들에 대해서 각각 별칭 붙이기(별칭 ""로 감싸줘야 대소문자 구분됨)
+      `SELECT C.*, P_NAME, CUSNO "cusNo", CUSNAME "cName", `
+      + `TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIR, GENDER "gender", PHONE "phone", `
+      + `ADDRESS "addr", TO_CHAR(SIGN_DATE, 'YYYY-MM-DD') AS SIGNDATE `
+      + `FROM CUSTOMERS C `
+      + `INNER JOIN PRODUCTS P ON P.P_NO = C.PROD_NO `
+      + `WHERE CUSNO = ${cusNo}` // 내가 파라미터로 보낸값
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴 (키-밸류 형태)
+    res.json({
+        result : "success",
+        info : rows[0] // 어차피 해당하는 pk값은 하나일테니
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+
 // 개인정보 수정 팝업에서 최종 수정 버튼 눌렀을 때
 app.get('/pro-info-update', async (req, res) => {
   const { empNo, newPwd, midPhone, lastPhone } = req.query;
@@ -459,6 +573,121 @@ app.get('/pro-info-update', async (req, res) => {
   } catch (error) {
     console.error('Error executing insert', error);
     res.status(500).send('Error executing insert');
+  }
+});
+
+// 고객 정보 수정
+app.get('/cus/update', async (req, res) => {
+  const { cusNo, cName, BIR, gender, phone, addr } = req.query;
+
+  try {
+    await connection.execute(
+      `UPDATE CUSTOMERS SET `
+      + `CUSNAME = :cName, BIRTH = :BIR, GENDER = :gender, PHONE = :phone, ADDRESS = :addr `
+      + `WHERE CUSNO = :cusNo`,
+      [cName, BIR, gender, phone, addr, cusNo], // 윗줄에서 :으로 접근해서 참조할 값(순서지키기!)
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
+// 고객정보 삭제
+app.get('/cus/delete', async (req, res) => {
+  const { cusNo } = req.query;
+
+  try {
+    await connection.execute(      
+      `DELETE FROM CUSTOMERS WHERE CUSNO = '${cusNo}'`,
+      [], // 여길 비우고 위처럼 백틱써도됨 
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing delete', error);
+    res.status(500).send('Error executing delete');
+  }
+});
+
+// 직원조회(리스트)
+app.get('/pro-emp/list', async (req, res) => {
+  const { offset, pageSize, option, keyword} = req.query;
+  
+  // 검색관련
+  let subQuery = "";
+  if(option == "all"){
+    subQuery = `WHERE ENAME LIKE '%${keyword}%' OR PH LIKE '%${keyword}%'`;
+  } else if(option == "ename"){
+    subQuery = `WHERE ENAME LIKE '%${keyword}%'`;
+  } else if(option == "phone"){ 
+    subQuery = `WHERE PH LIKE '%${keyword}%'`;
+  } // 나중에 다른 옵션이 생길 수 있으니 그냥 else는 x
+
+  try {
+    const result = await connection.execute(
+      `SELECT E.*, TO_CHAR(REG_DATE, 'YYYY-MM-DD') AS REG FROM EMPLOYEE E `
+     + `${subQuery} `
+     +`OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY` // 몇페이지씩 건너뛸건지
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+
+    const count = await connection.execute(
+      `SELECT COUNT(*) FROM EMPLOYEE`
+    );
+
+    // 리턴
+    res.json({
+        result : "success",
+        proEmpList : rows,
+        count : count.rows[0][0] // 게시글 개수 구하려고 이 내용 추가함
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 상품조회
+app.get('/prod/list', async (req, res) => {
+  const {  } = req.query;  
+  try {
+    const result = await connection.execute(
+      `SELECT P.*, TO_CHAR(R_DATE, 'YYYY-MM-DD') AS RDATE FROM PRODUCTS P`
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴 (키-밸류 형태)
+    res.json({
+        result : "success",
+        prodList : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
   }
 });
 

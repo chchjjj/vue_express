@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>더조은손해보험 통합관리시스템</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
@@ -78,7 +78,7 @@
         <!-- html 코드는 id가 app인 태그 안에서 작업 -->
       <div id="container">
         <div class="topBtn">
-            <span>
+            <span>                
                 <button id="topBtn" @click="fnInfoEdit(empNo)">정보수정</button>
                 <button id="topBtn" @click="fnLogout">로그아웃</button>
             </span>
@@ -89,9 +89,9 @@
         </div>
 
         <div class="menu">
-            <span>고객조회</span>
-            <span>직원조회</span>
-            <span>상품조회</span>
+            <span @click="fnCus">고객조회</span>
+            <span @click="fnEmp">직원조회</span>
+            <span @click="fnProd">상품조회</span>
             <span>계약관리</span>
             <span>VOC(민원)</span>
         </div>
@@ -127,21 +127,11 @@
                     }
                 });
                
-            },
+            },            
 
-            // 우측 상단 정보수정 버튼
+            // 우측 상단 '정보수정' 버튼
             fnInfoEdit: function (empNo) {
                 let self = this;
-                // let param = {};
-                // $.ajax({
-                //     url: "http://localhost:3009/",
-                //     dataType: "json",
-                //     type: "GET",
-                //     data: {},
-                //     success: function (data) {
-
-                //     }
-                // });
                 window.open(`infoEdit.html?empNo=${empNo}`, "infoEdit", "width=800, height=700");
             },
 
@@ -150,6 +140,21 @@
                 let self = this;
                 alert("로그아웃 되었습니다.");
                 location.href="login.html";
+            },
+
+            // 고객조회 버튼
+            fnCus: function(){
+                location.href="customers.html";
+            },
+
+            // 직원조회 버튼
+            fnEmp: function(){
+                location.href="emp.html";
+            },
+
+            // 상품조회 버튼
+            fnProd: function(){
+                location.href="products.html";
             }
 
         }, // methods

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품조회</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid rgb(87, 86, 86);
+            border-collapse: collapse;
+            padding: 5px 8px;
+            text-align: center;
+            width: 1000px;
+            margin-left: 100px;
+            margin-top: 70px;            
+            table-layout: auto;
+            white-space: nowrap;
+        }
+
+        th{
+            background-color: rgb(192, 223, 206);
+            color: rgb(19, 18, 18);
+        }
+
+        tr:nth-child(even){
+            background-color: rgb(233, 238, 228);
+        }
+
+        body{
+            background-color: rgb(238, 237, 237);
+        }
+
+        #container{
+            background-color: white;
+            width: 1200px;
+            height: 950px;
+            border: 3px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            /* text-align: center; */
+            
+        }
+
+        .topBtn{
+            margin-top: 30px;
+            margin-right: 30px;
+            text-align: right;
+        }
+
+        #topBtn{
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        h1{
+            margin-left: 100px;
+        }
+
+        .index{ /* 페이징 */
+            margin-right: 30px; /* 숫자 간 간격*/
+            text-decoration: none; /* 숫자 밑줄 지우기 */
+            color: black;
+            font-size: 20px;            
+        }
+
+        .page{
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .bottom{
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .bottom #prodAdd{
+            margin-top: 20px;
+            margin-left: 100px;
+            font-size: 15px;
+            cursor: pointer;
+            width: 100px;
+        }
+
+        #info{
+            margin-left: 100px;
+            margin-top: 20px;
+            color: rgb(103, 112, 238);
+        }
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div class="topBtn">
+            <span>
+                <button id="topBtn" @click="fnHome">처음으로</button>
+                <button id="topBtn" @click="fnInfoEdit(empNo)">정보수정</button>
+                <button id="topBtn" @click="fnLogout">로그아웃</button>
+            </span>
+        </div>
+        <div><h1>상품조회</h1></div>
+        <table>
+            <tr>
+                <th>종류</th>
+                <th>상품번호</th>
+                <th>상품명</th>
+                <th>월보험료</th>
+                <th>해지형태</th>
+                <th>판매개시일</th>
+                <th>게시자</th>
+                <th>정보수정</th>
+            </tr>
+            <tr v-for="item in list">
+                <td>{{item.TYPE}}</td>
+                <td>{{item.P_NO}}</td>
+                <td>{{item.P_NAME}}</td>
+                <td>{{item.PRICE}}</td>
+                <td>{{item.REFUND}}</td>
+                <td>{{item.RDATE}}</td>
+                <td>{{item.POSTER}}</td>
+                <td><button @click="fnEdit(item.P_NO)">정보수정</button></td>
+            </tr>
+        </table>
+
+        <div class="bottom">
+            <button id="prodAdd" @click="fnProdAdd">새 상품등록</button>                      
+        </div>        
+        <div id="info">※ 상품등록 및 수정은 관리자 권한만 가능합니다.</div>
+
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                list : [],
+                status : "" // 로그인 정보 중 권한 파악 위해 (빈값이면 비로그인 상태)
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+            fnProdList: function () {
+                let self = this;
+                let param = {
+                };
+                $.ajax({
+                    url: "http://localhost:3009/prod/list",
+                    dataType: "json",
+                    type: "GET",
+                    data: {},
+                    success: function (data) {
+                        self.list = data.prodList;
+                       
+                    }
+                });
+            },
+
+            // '정보수정' 버튼
+            fnEdit : function(){
+                let self = this;                       
+            },
+
+            // 새 상품등록 
+            fnProdAdd : function(){
+                location.href="prod-add.html";
+            },
+
+            // 우측 상단 '처음으로' 버튼
+            fnHome : function(){
+                location.href = "basicSet.html";
+            }, 
+
+            // 우측 상단 '정보수정' 버튼
+            fnInfoEdit: function (empNo) {
+                let self = this;
+                window.open(`infoEdit.html?empNo=${empNo}`, "infoEdit", "width=800, height=700");
+            },
+
+            // 우측 상단 로그아웃 버튼
+            fnLogout: function(){
+                let self = this;
+                alert("로그아웃 되었습니다.");
+                location.href="login.html";
+            }
+
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.empNo = sessionStorage.getItem("sessionId");
+            self.status = sessionStorage.getItem("sessionStatus");
+            self.fnProdList();
+        }
+    });
+
+    app.mount('#app');
+</script>

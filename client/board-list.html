@@ -70,7 +70,7 @@
          <a v-if="page != 1" class=index href="javascript:;" @click="fnMove(-1)">◀</a>
 
         <!-- 페이징 (클릭할 수 있게 a 태그로)/ 클릭한 현재페이지로 스타일 바꿔주기 -->
-        <!-- for문 반복할 떈 id말고 클래스로 써야함 이유는 못들음 --> 
+        <!-- for문 반복할 떈 id말고 클래스로 써야함 id는 한번만 쓰이는거니까 --> 
         <a class=index href="javascript:;" v-for="num in index" @click="fnPage(num)">
             <!-- 인덱스 숫자만큼 반복 돌면서 숫자(페이지) 찍기-->
 
