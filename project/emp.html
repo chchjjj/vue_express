@@ -43,7 +43,14 @@
             box-shadow: 2px 2px 2px rgb(202, 201, 201);
             margin: 50px auto;
             /* text-align: center; */
-            
+            position: relative; /* 추가 */ 
+        }
+
+        #container img {
+            position: absolute;
+            bottom: 20px;  /* 아래에서 10px 떨어진 위치 */
+            right: 65px;   /* 오른쪽에서 10px 떨어진 위치 */
+            z-index: 1000; /* 다른 요소 위에 나오도록 */
         }
 
         .topBtn{
@@ -147,7 +154,7 @@
                 <td>{{item.PH}}</td>
                 <td>{{item.MOBILE}}</td>
                 <td>{{item.REG}}</td>
-                <td><button @click="">정보수정</button></td>
+                <td><button @click="fnEdit(item.EMPNO)" :disabled="status != 'S'">직원수정</button></td>
             </tr>
         </table>
         <div class="page">
@@ -158,7 +165,7 @@
         </div>
 
         <div class="bottom">
-            <button id="empAdd" :disabled="status != 'S'">새 직원등록</button>
+            <button id="empAdd" @click="fnEmpAdd" :disabled="status != 'S'">새 직원등록</button>
             <div id="search">
             <select v-model="option">
                 <option value="all">:: 전체 ::</option>
@@ -172,8 +179,8 @@
             <button @click="fnEmpList">검색</button>
             </div>
         </div>
-        <div id="info">※ 신규 직원 등록은 관리자 권한만 가능합니다.</div>
-        
+        <div id="info">※ 기존직원 수정 및 신규 직원 등록은 관리자 권한만 가능합니다.</div>
+        <div><img src="media/logo.PNG"></div>
       </div>
     </div>
 </body>
@@ -220,6 +227,16 @@
                 let self = this;
                 self.page = num;
                 self.fnEmpList();
+            },
+
+            // 새 직원 등록
+            fnEmpAdd : function(){
+                window.open(`emp-add.html`, "empAdd", "width=800, height=800");
+            },
+
+            // '직원수정' 버튼
+            fnEdit : function(empNo){
+                location.href = "emp-edit.html?empNo="+empNo;
             },
 
             // 우측 상단 '처음으로' 버튼

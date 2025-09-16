@@ -35,8 +35,15 @@
             border-radius: 20px;
             box-shadow: 2px 2px 2px rgb(202, 201, 201);
             margin: 50px auto;
-            /* text-align: center; */
-            
+            /* text-align: center; */   
+            position: relative; /* 추가 */         
+        }
+
+        #container img {
+            position: absolute;
+            bottom: 20px;  /* 아래에서 10px 떨어진 위치 */
+            right: 65px;   /* 오른쪽에서 10px 떨어진 위치 */
+            z-index: 1000; /* 다른 요소 위에 나오도록 */
         }
 
         .topBtn{
@@ -52,8 +59,9 @@
 
         .welcome{
             margin-left: 35px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             font-size: 16px;
+            color: rgb(51, 50, 50);
         }
 
         .menu{
@@ -71,6 +79,35 @@
             cursor: pointer;
         }
 
+        .box{
+            width: 480px;
+            height: 250px;
+            border: 1px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            margin-left: 100px;
+            margin-top : 40px
+        }
+
+        h3{
+            margin-left: 25px;
+        }
+
+        li{
+            margin-bottom: 10px;
+        }
+
+        .info{
+            margin-left: 20px;
+            color: rgb(103, 112, 238);
+            text-align: left;
+        }
+
+        .info button{
+            margin-left: 10px;
+            width: 100px;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -83,7 +120,7 @@
                 <button id="topBtn" @click="fnLogout">로그아웃</button>
             </span>
         </div>
-        <div class="welcome" v-for="item in list">
+        <div class="welcome" v-for="item in empList">
             <div>{{item.ENAME}}님 환영합니다. (권한 : {{item.POSITION}})</div>
             <div>소속 : {{item.DEPT}}</div>
         </div>
@@ -95,9 +132,35 @@
             <span>계약관리</span>
             <span>VOC(민원)</span>
         </div>
-
-
+        
+        <div class="box">
+            <h3>공지사항</h3>
+            <ul>                
+                <li v-for="notice in noticeList">
+                {{notice.TITLE}} ({{notice.CDATE}})
+                </li>
+            </ul>
+            <div class="info">
+                ※ 최근 3개 내용까지만 미리보기됩니다.
+                <a href="notice.html"><button>더보기</button></a>
+            </div>
+        </div>
+        
+        <div class="box">
+            <h3>경조사</h3>
+            <ul>                
+                <li v-for="event in eventList">
+                {{event.TYPE}}) {{event.TITLE}} ({{event.CDATE}})
+                </li>
+            </ul>
+            <div class="info">
+                ※ 최근 3개 내용까지만 미리보기됩니다.
+                <a href="event.html"><button>더보기</button></a>
+            </div>
+        </div>
+        <div><img src="media/logo.PNG"></div>
       </div>
+      
     </div>
 </body>
 </html>
@@ -107,8 +170,10 @@
         data() {
             return {
                 // 변수 - (key : value)
-                list : [],
-                empNo : ""
+                empList : [],
+                empNo : "",
+                noticeList : [],
+                eventList : []
             };
         },
         methods: {
@@ -123,7 +188,7 @@
                     type: "GET",
                     data: {empNo : self.empNo},
                     success: function (data) {
-                        self.list = data.empList;
+                        self.empList = data.empList;
                     }
                 });
                
@@ -155,6 +220,35 @@
             // 상품조회 버튼
             fnProd: function(){
                 location.href="products.html";
+            },
+
+            // 공지사항, 경조사 게시판 뜨도록 하기 (바로 실행)
+            fnNotice: function () {
+                let self = this;
+                let param = {};
+                $.ajax({
+                    url: "http://localhost:3009/notice/preview",
+                    dataType: "json",
+                    type: "GET",
+                    data: {},
+                    success: function (data) {
+                        self.noticeList = data.preList;
+                    }
+                });               
+            },
+
+            fnEvent: function () {
+                let self = this;
+                let param = {};
+                $.ajax({
+                    url: "http://localhost:3009/event/preview",
+                    dataType: "json",
+                    type: "GET",
+                    data: {},
+                    success: function (data) {
+                        self.eventList = data.eventList;
+                    }
+                });               
             }
 
         }, // methods
@@ -163,6 +257,8 @@
             let self = this;
             self.empNo = sessionStorage.getItem("sessionId");
             self.fnBasic();
+            self.fnNotice();
+            self.fnEvent();
         }
     });
 

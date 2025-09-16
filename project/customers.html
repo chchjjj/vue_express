@@ -40,7 +40,14 @@
             box-shadow: 2px 2px 2px rgb(202, 201, 201);
             margin: 50px auto;
             /* text-align: center; */
-            
+            position: relative; /* 추가 */             
+        }
+
+        #container img {
+            position: absolute;
+            bottom: 20px;  /* 아래에서 10px 떨어진 위치 */
+            right: 65px;   /* 오른쪽에서 10px 떨어진 위치 */
+            z-index: 1000; /* 다른 요소 위에 나오도록 */
         }
 
         .topBtn{
@@ -140,7 +147,7 @@
                 <td>{{item.BIR}}</td>
                 <td>{{item.GENDER}}</td>
                 <td>{{item.PHONE}}</td>
-                <td><button>상담이력</button></td>
+                <td><button @click="fnCs">상담이력</button></td>
                 <td><button @click="fnCusInfo(item.CUSNO)">상세정보</button></td>
             </tr>
         </table>
@@ -165,7 +172,8 @@
             <button @click="fnCusList">검색</button>
             </div>            
         </div>        
-        
+       
+        <div><img src="media/logo.PNG"></div>
       </div>
     </div>
 </body>
@@ -230,6 +238,11 @@
                
             },
 
+            // 고객 '상담이력' 버튼 (준비중)
+            fnCs : function(){
+                alert("준비중입니다.");
+            },
+
             // 고객 '상세정보' 버튼
             fnCusInfo : function(cusNo){
                 let self = this;                       
@@ -238,7 +251,7 @@
 
             // 고객등록 
             fnCusAdd : function(){
-                location.href="cus-add.html";
+                window.open(`cus-add.html`, "cusAdd", "width=800, height=800");
             },
 
             // 우측 상단 '처음으로' 버튼

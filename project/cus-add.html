@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객등록</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+
+        #container{
+            width: 800px;
+            height: 700px;
+            border: 2px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;            
+        }
+
+
+        h2{
+            margin-top: 60px;
+            margin-bottom: 40px;
+        }
+
+        .box{
+            width: 600px;
+            height: 600;
+            text-align: left;
+            padding-left: 100px;
+        }
+
+        #info{
+            color: rgb(103, 112, 238);
+            margin-bottom: 15px;
+            font-size: medium;
+        }
+
+        input{
+            margin-bottom: 15px;
+            height: 23px;
+            border-radius: 5px;
+            margin-left: 20px;
+        }
+
+        .phone input{
+            width: 40px;
+            margin-left: 5px;
+        }
+
+        button{
+            width: 100px;
+            height: 30px;
+            margin: 20px;
+            margin-top: 30px;
+            background-color: rgb(209, 209, 243);
+            font-size: medium;
+            border: 3px outset;
+            cursor: pointer;
+        }
+
+        select{
+            margin-left: 10px;
+            margin-bottom: 17px;
+            height: 25px;
+            width: 180px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div><h2>신규 고객 등록</h2></div>
+
+        <div class="box">
+            <div>
+                이름<input v-model="cusName">　
+                생년월일<input type="date" v-model="birth">
+            </div>
+            <div>
+                성별 
+                <label><input type="radio" v-model="gender" value="M" name="gender" checked> 남자</label>
+                <label><input type="radio" v-model="gender" value="F" name="gender"> 여자</label>
+            </div>             
+            <div>
+                휴대전화<input v-model="phone">
+            </div>            
+            <div>
+                주소<input v-model="addr">
+            </div>
+            <div id="info">※ 향후 주소등록 별도 팝업 생성 예정</div>
+            <!-- <div>
+                가입상품<select v-model="prod">
+                        <option value="2509">참좋은종합보험</option>
+                        <option value="3782">더튼튼어린이보험</option>
+                        <option value="4317">안전운전자보험</option>
+                        <option value="5974">더조은암보험</option>
+                        <option value="8130">스피드자동차보험</option>
+                        <option value="9201">더조은화재보험</option>
+                        <option value="1055">행복연금보험</option>
+                        <option value="6789">더조은우리펫보험</option>
+                    </select>
+            </div> -->
+            <div>고객등록일<input type="date" v-model="signDate"></div>
+            <div>담당 설계사 <input type="text" v-model="charge" placeholder="사번입력"></div>            
+            
+        </div>
+
+        <div>
+            <button @click="fnAdd">등록</button>
+            <button @click="fnClose">취소</button>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                cusName : "",
+                birth : "",
+                gender : "M",
+                phone : "",
+                addr : "",
+                signDate : "",
+                charge : "",
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())         
+            
+
+            // '등록' 버튼
+            fnAdd : function(){
+                let self = this;
+                let param = {
+                    cusName : self.cusName,
+                    birth : self.birth,
+                    gender : self.gender,
+                    phone : self.phone,
+                    addr : self.addr,
+                    signDate : self.signDate,
+                    charge : self.charge
+                };                
+
+                if(
+                    self.cusName=="" || self.birth=="" ||
+                    self.phone=="" || self.addr=="" ||
+                    self.signDate=="" || self.charge==""
+
+                ){
+                    alert("빈 값이 있습니다.\n빠짐없이 작성 바랍니다.");
+                    return;
+                }
+
+                if(self.charge.charAt(0) != '3'){
+                    alert("담당 설계사 사번은 3으로 시작해야합니다.");
+                    return;
+                }
+
+                if(self.charge.length != 7){
+                    alert("사번은 7자리입니다.");
+                    return;
+                }
+                
+                // 정규식 : /정규식/.test(문자열)
+                if(/[^0-9]/.test(self.charge)){
+                    alert("담당 설계사 란에는 사번(숫자)만 입력가능합니다.");
+                    return;
+                }
+
+                // 고객 중복확인
+                $.ajax({
+                    url: "http://localhost:3009/cusChk",
+                    dataType: "json",
+                    type: "GET",
+                    data: {
+                        cusName : self.cusName,
+                        birth : self.birth
+                    },
+                    success: function (data) {
+                        if (data.result === "success" && data.cusList.length > 0) {
+                            alert("이미 등록된 고객입니다.");
+                            return;
+                          }
+
+                        // 이상없을 시 인서트
+                        $.ajax({
+                            url: "http://localhost:3009/cus/insert",
+                            dataType: "json",
+                            type: "GET",
+                            data: param,
+                            success: function (data) {
+                                alert("고객 등록이 완료되었습니다.");
+                                window.close();
+                                location.href="customers.html";
+                            }
+                        });
+                    }
+                });               
+
+            },
+
+            // 팝업에서 "취소" 버튼
+            fnClose:function(){
+                window.close();
+
+            }
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;         
+            window.vueObj = this;
+        }
+    });
+
+    app.mount('#app');
+</script>

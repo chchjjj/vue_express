@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: center;
+        }
+
+        th{
+            background-color: rgb(255, 205, 244);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+
+        #container{
+            width: 800px;
+            height: 700px;
+            border: 2px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;            
+        }
+
+
+        h2{
+            margin-top: 60px;
+            margin-bottom: 40px;
+        }
+
+        .box{
+            width: 600px;
+            height: 600;
+            text-align: left;
+            padding-left: 100px;
+        }
+
+        #info{
+            color: rgb(103, 112, 238);
+            margin-bottom: 15px;
+            font-size: medium;
+        }
+
+        input{
+            margin-bottom: 15px;
+            height: 23px;
+            border-radius: 5px;
+            margin-left: 20px;
+        }
+
+        .phone input{
+            width: 40px;
+            margin-left: 5px;
+        }
+
+        button{
+            width: 100px;
+            height: 30px;
+            margin: 20px;
+            margin-top: 30px;
+            background-color: rgb(209, 209, 243);
+            font-size: medium;
+            border: 3px outset;
+            cursor: pointer;
+        }
+
+        select{
+            margin-left: 10px;
+            height: 25px;
+            width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div><h2>신규 직원 등록</h2></div>
+
+        <div class="box">
+            <div>
+                사번<input v-model="empNo">　
+                이름<input v-model="eName">
+            </div>
+            <div>
+                최초 패스워드<input type="password" v-model="pwd" placeholder="양식 준수 요망">
+            </div>            
+            <div>
+                패스워드 확인<input type="password" v-model="pwdChk" placeholder="양식 준수 요망">
+            </div>
+            <div id="info">※ 최초 패스워드 : a + 사번으로 설정(예 : a1000001), 차후 개별 변경하도록 안내 요망</div>
+            <!-- <div class="phone">
+                내선번호 　02 - <input v-model="midPh"> - <input v-model="lastPh">
+            </div>
+            <div class="phone">
+                개인번호 　010 - <input v-model="midMobile"> - <input v-model="lastMobile">
+            </div> -->
+            <div>
+                내선번호<input v-model="ph">　
+                개인번호<input v-model="mobile">
+            </div>
+            <div id="info">※ 내선번호, 개인번호 기재시 '-' 기호 포함하여 입력</div>
+            <div>
+                소속<input v-model="dept">
+            </div>
+            <div>
+                직책<input v-model="position">　
+                권한<select v-model="status">
+                        <option value="S">:: 관리자(S) ::</option>
+                        <option value="A">:: 임직원(A) ::</option>
+                        <option value="P">:: 설계사(P) ::</option>
+                    </select>
+            </div>
+            <div>입사일<input type="date" v-model="regDate"></div>
+        </div>
+
+        <div>
+            <button @click="fnAdd">등록</button>
+            <button @click="fnClose">취소</button>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                empNo : "",
+                eName : "",
+                pwd : "",
+                pwdChk : "",
+                ph : "",
+                mobile : "",
+                dept : "",
+                position : "",
+                status : "A",
+                regDate : "",
+                info : {}
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())         
+
+            // '등록' 버튼
+            fnAdd : function(){
+                let self = this;
+                let param = {
+                    empNo : self.empNo,
+                    eName : self.eName,
+                    pwd : self.pwd,                    
+                    dept : self.dept,
+                    position : self.position,
+                    ph : self.ph,
+                    mobile : self.mobile,
+                    status : self.status,
+                    regDate : self.regDate,
+                };
+
+                if(self.empNo.length != 7){
+                    alert("사번은 7자리입니다.");
+                    return;
+                }
+
+                if(self.empNo.charAt(0) != '1' && self.empNo.charAt(0) != '3'){
+                    alert("사번은 1(관리자 포함 임직원), \n 또는 3(설계사)으로만 시작해야합니다.");
+                    return;
+                }
+
+                if(self.pwd.length < 8){
+                    alert("비밀번호는 8자리 양식에 맞게 설정 요망");
+                    return;
+                }
+                
+                if(self.pwd != self.pwdChk){
+                    alert("변경 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+                    return;
+                }
+
+                if(
+                    self.eName=="" || self.pwd=="" ||
+                    self.ph=="" || self.mobile=="" ||
+                    self.dept=="" || self.position=="" || self.regDate==""
+
+                ){
+                    alert("빈 값이 있습니다.\n빠짐없이 작성 바랍니다.");
+                    return;
+                }
+
+                // 중복확인
+                $.ajax({
+                    url: "http://localhost:3009/empNochk",
+                    dataType: "json",
+                    type: "GET",
+                    data: {empNo : self.empNo},
+                    success: function (data) {
+                        if (data.result === "success" && data.list.length > 0) {
+                            alert("중복된 사번입니다.");
+                            return;
+                          }
+
+                        // 이상없을 시 인서트
+                        $.ajax({
+                            url: "http://localhost:3009/pro-emp/insert",
+                            dataType: "json",
+                            type: "GET",
+                            data: param,
+                            success: function (data) {
+                                alert("등록되었습니다.\n해당 직원에게 안내 바랍니다.");
+                                window.close();
+                            }
+                        });
+                    }
+                });               
+
+            },
+
+            // 팝업에서 "취소" 버튼
+            fnClose:function(){
+                window.close();
+
+            }
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.empNo = sessionStorage.getItem("sessionId");
+            
+            // 파라미터 받아오는 구문!(아래두줄)
+            const queryParams = new URLSearchParams(window.location.search);
+            self.empNo = queryParams.get('empNo') || ''; 
+
+            if(self.empNo != ""){ // self.empNo가 빈값이 아니라면 (값이 들어가있다면)
+                self.fnInfo(); // 이 함수 바로 실행
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>

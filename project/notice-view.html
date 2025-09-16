@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid rgb(163, 162, 162);            
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: left;
+            padding-left: 30px;
+            width: 500px;
+            
+        }
+
+        th{
+            background-color: rgb(233, 238, 228);
+            width: 150px;
+        }
+  
+        tr:nth-child(even){
+            background-color: beige;
+        }
+
+        #container{
+            width: 1000px;
+            height: 800px;
+            border: 2px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;            
+        }
+
+
+        h2{
+            margin-top: 80px;
+            margin-bottom: 40px;
+        }
+
+        .box{
+            padding-left: 250px; 
+            margin-bottom: 80px;
+        }
+
+        #info{
+            color: rgb(103, 112, 238);
+            margin-bottom: 50px;
+        }
+
+        input{
+            margin-bottom: 20px;
+            height: 23px;
+            border-radius: 5px;
+            margin-left: 20px;
+        }
+
+        .phone input{
+            width: 40px;
+            margin-left: 5px;
+        }
+
+        button{
+            width: 100px;
+            height: 30px;
+            margin: 10px;
+            background-color: rgb(209, 209, 243);
+            font-size: medium;
+            border: 3px outset;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div><h2>공지사항 상세</h2></div>
+
+        <div class="box">
+        <table>
+            <tr>
+                <th>순번</th>
+                <td>{{info.BOARDNO}}</td>
+            </tr>
+            <tr>
+                <th>종류</th>
+                <td>{{info.TYPE}}</td>
+            </tr>
+            <tr>
+                <th>제목</th>
+                <td>{{info.TITLE}}</td>
+            </tr>
+            <tr>
+                <th>작성자</th>
+                <td>{{info.WRITER}}</td>
+            </tr>
+            <tr>
+                <th>작성일</th>
+                <td>{{info.CDATE}}</td>
+            </tr>
+            <tr>
+                <th>내용</th>
+                <td>{{info.CONTENTS}}</td>
+            </tr>            
+        </table>
+        </div>
+
+        <div>
+            <button @click="fnEdit(boardNo)">수정</button>
+            <button @click="fnBack">목록으로</button>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                boardNo : "",
+                info : {}
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            // 공지사항 세부보기
+            fnInfo: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/notice/info",
+                    dataType: "json",
+                    type: "GET",
+                    data: {boardNo : self.boardNo},
+                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
+                    // boardNo 파라미터로 보내기
+                    success: function (data) {
+                        self.info = data.info; 
+                        // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
+                        
+                    }
+                });
+            },
+            
+            // "수정" 버튼
+            fnEdit:function(boardNo){
+                let self = this;                
+                location.href="notice-edit.html?boardNo="+boardNo;
+            },
+
+            fnBack : function(){
+                location.href="notice.html";
+            }
+            
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.status = sessionStorage.getItem("sessionStatus");
+            
+            // 파라미터 받아오는 구문!(아래두줄)
+            const queryParams = new URLSearchParams(window.location.search);
+            self.boardNo = queryParams.get('boardNo') || ''; 
+
+            if(self.boardNo != ""){ // 빈값이 아니라면 (값이 들어가있다면)
+                self.fnInfo(); // 이 함수 바로 실행
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>

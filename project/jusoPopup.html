@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>주소 연동</title>
+</head>
+<body onload="init();">
+    <form id="form" name="form" method="post">
+        <input type="hidden" id="confmKey" name="confmKey" value="" />
+        <input type="hidden" id="returnUrl" name="returnUrl" value="" />
+        <input type="hidden" id="resultType" name="resultType" value="" />
+    </form>
+
+    <script>
+        function getParam(name) {
+            return new URLSearchParams(window.location.search).get(name) || '';
+        }
+
+        function init() {
+            const inputYn = getParam("inputYn");
+
+            if (inputYn !== "Y") {
+                const form = document.form;
+                const url = location.href;
+                const confmKey = "devU01TX0FVVEgyMDI1MDkxMTExNTM0NDExNjE3MjI="; // 승인키 입력
+                const resultType = "4"; // 1~4 유형
+
+                form.confmKey.value = confmKey;
+                form.returnUrl.value = url;
+                form.resultType.value = resultType;
+
+                form.action = "https://business.juso.go.kr/addrlink/addrLinkUrl.do"; // 인터넷망
+                // form.action = "https://business.juso.go.kr/addrlink/addrMobileLinkUrl.do"; // 모바일용
+                form.submit();
+            } else {
+                const params = new URLSearchParams(window.location.search);
+
+                // opener 함수 호출 (팝업에서 부모 창으로 값 전달)
+                if (window.opener && typeof window.opener.jusoCallBack === "function") {
+                    window.opener.jusoCallBack(
+                        params.get("roadFullAddr") || '',
+                        params.get("roadAddrPart1") || '',
+                        params.get("addrDetail") || '',
+                        params.get("roadAddrPart2") || '',
+                        params.get("engAddr") || '',
+                        params.get("jibunAddr") || '',
+                        params.get("zipNo") || '',
+                        params.get("admCd") || '',
+                        params.get("rnMgtSn") || '',
+                        params.get("bdMgtSn") || '',
+                        params.get("detBdNmList") || '',
+                        params.get("bdNm") || '',
+                        params.get("bdKdcd") || '',
+                        params.get("siNm") || '',
+                        params.get("sggNm") || '',
+                        params.get("emdNm") || '',
+                        params.get("liNm") || '',
+                        params.get("rn") || '',
+                        params.get("udrtYn") || '',
+                        params.get("buldMnnm") || '',
+                        params.get("buldSlno") || '',
+                        params.get("mtYn") || '',
+                        params.get("lnbrMnnm") || '',
+                        params.get("lnbrSlno") || '',
+                        params.get("emdNo") || ''
+                    );
+                }
+
+                window.close();
+            }
+        }
+    </script>
+</body>
+</html>

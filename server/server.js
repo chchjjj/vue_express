@@ -442,7 +442,7 @@ app.get('/pro-login', async (req, res) => {
   }
 });
 
-// 로그인 후 첫(베이직)화면
+// 로그인 후 첫(베이직)화면 (1)
 app.get('/pro-basic', async (req, res) => {
   const { empNo } = req.query;
   try {
@@ -463,6 +463,130 @@ app.get('/pro-basic', async (req, res) => {
     res.json({
         result : "success",
         empList : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 로그인 후 첫(베이직)화면 (2) - 공지사항 게시판 미리보기
+app.get('/notice/preview', async (req, res) => {
+  const { } = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT TYPE, TITLE, WRITER, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE `
+      + `FROM NOTICE `
+      + `ORDER BY CDATE DESC `
+      + `FETCH FIRST 3 ROWS ONLY`
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴
+    res.json({
+        result : "success",
+        preList : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 로그인 후 첫(베이직)화면 (3) - 경조사 게시판 미리보기
+app.get('/event/preview', async (req, res) => {
+  const { } = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT TYPE, TITLE, WRITER, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE `
+      + `FROM EVENT `
+      + `ORDER BY CDATE DESC `
+      + `FETCH FIRST 3 ROWS ONLY`
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴
+    res.json({
+        result : "success",
+        eventList : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 공지사항 게시판 (더보기 눌러서 접속)
+app.get('/notice', async (req, res) => {
+  const { } = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT BOARDNO, TYPE, TITLE, WRITER, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE `
+      + `FROM NOTICE `
+      + `ORDER BY BOARDNO DESC`
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴
+    res.json({
+        result : "success",
+        list : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 공지사항 상세
+app.get('/notice/info', async (req, res) => {
+  const { boardNo } = req.query;
+  try {
+    const result = await connection.execute(
+      // 보낸 값들에 대해서 각각 별칭 붙이기(별칭 ""로 감싸줘야 대소문자 구분됨)
+      `SELECT N.*, BOARDNO "boardNo", TYPE "type", TITLE "title", WRITER "writer", `
+      + `TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE, CONTENTS "contents" `
+      + `FROM NOTICE N `
+      + `WHERE BOARDNO = ${boardNo}` // 내가 파라미터로 보낸값
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴 (키-밸류 형태)
+    res.json({
+        result : "success",
+        info : rows[0] // 어차피 해당하는 pk값은 하나일테니
     });
   } catch (error) {
     console.error('Error executing query', error);
@@ -528,7 +652,7 @@ app.get('/cus/info', async (req, res) => {
       + `TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIR, GENDER "gender", PHONE "phone", `
       + `ADDRESS "addr", TO_CHAR(SIGN_DATE, 'YYYY-MM-DD') AS SIGNDATE `
       + `FROM CUSTOMERS C `
-      + `INNER JOIN PRODUCTS P ON P.P_NO = C.PROD_NO `
+      + `LEFT JOIN PRODUCTS P ON P.P_NO = C.PROD_NO `
       + `WHERE CUSNO = ${cusNo}` // 내가 파라미터로 보낸값
     );
     const columnNames = result.metaData.map(column => column.name);
@@ -616,6 +740,54 @@ app.get('/cus/delete', async (req, res) => {
   }
 });
 
+// 새 고객 등록 시 기존등록 여부 확인
+app.get('/cusChk', async (req, res) => {
+  const { cusName, birth } = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT * FROM CUSTOMERS WHERE CUSNAME = '${cusName}' AND BIRTH = '${birth}'`
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴
+    res.json({
+        result : "success",
+        cusList : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 새 고객 등록(인서트)
+app.get('/cus/insert', async (req, res) => {
+  const { cusName, birth, gender, phone, addr, signDate, charge } = req.query;
+
+  try {
+    await connection.execute(
+      `INSERT INTO CUSTOMERS (CUSNO, CUSNAME, BIRTH, GENDER, PHONE, ADDRESS, SIGN_DATE, CHARGE) `
+      +`VALUES(CUSNO_SEQ.NEXTVAL, :cusName, :birth, :gender, :phone, :addr, :signDate, :charge)`,
+      [cusName, birth, gender, phone, addr, signDate, charge], // 윗줄에서 :으로 참조할 값 <- 여기 넣기
+      { autoCommit: true }   
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
 // 직원조회(리스트)
 app.get('/pro-emp/list', async (req, res) => {
   const { offset, pageSize, option, keyword} = req.query;
@@ -656,6 +828,87 @@ app.get('/pro-emp/list', async (req, res) => {
         result : "success",
         proEmpList : rows,
         count : count.rows[0][0] // 게시글 개수 구하려고 이 내용 추가함
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 새 직원 등록 시 사원번호 중복체크
+app.get('/empNochk', async (req, res) => {
+  const { empNo } = req.query;
+  let query = `SELECT * FROM EMPLOYEE WHERE EMPNO = '${empNo}'`;
+  try {
+    const result = await connection.execute(query);
+    const columnNames = result.metaData.map(column => column.name);
+
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    res.json({
+      result : "success", // 찾았으면 중복이 됐다는거
+      list : rows
+    }); 
+    
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+
+// 새 직원 등록 (인서트)
+app.get('/pro-emp/insert', async (req, res) => {
+  const { eName, empNo, pwd, dept, position, ph, mobile, status, regDate } = req.query;
+
+  try {
+    await connection.execute(
+      `INSERT INTO EMPLOYEE (ENAME, EMPNO, PASSWORD, DEPT, POSITION, PH, MOBILE, STATUS, REG_DATE) `
+      +`VALUES(:eName, :empNo, :pwd, :dept, :position, :ph, :mobile, :status, :regDate)`,
+      [eName, empNo, pwd, dept, position, ph, mobile, status, regDate], // 윗줄에서 :으로 참조할 값 <- 여기 넣기
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
+// 직원 정보 수정 (기존정보 끌고오기)
+app.get('/pro-emp/info', async (req, res) => {
+  const { empNo } = req.query;
+  try {
+    const result = await connection.execute(
+      // 보낸 값들에 대해서 각각 별칭 붙이기(별칭 ""로 감싸줘야 대소문자 구분됨)
+      `SELECT E.*, EMPNO "empNo", ENAME "eName", `
+      + `DEPT "dept", POSITION "position", PH "ph", STATUS "status", TO_CHAR(REG_DATE, 'YYYY-MM-DD') AS REG  `
+      + `FROM EMPLOYEE E `
+      + `WHERE EMPNO = ${empNo}` // 내가 파라미터로 보낸값
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴 (키-밸류 형태)
+    res.json({
+        result : "success",
+        info : rows[0] // 어차피 해당하는 pk값은 하나일테니
     });
   } catch (error) {
     console.error('Error executing query', error);

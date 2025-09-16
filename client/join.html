@@ -42,34 +42,7 @@
 </html>
 
 <script>
-    function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail, roadAddrPart2, engAddr, jibunAddr, zipNo, admCd, rnMgtSn, bdMgtSn, detBdNmList, bdNm, bdKdcd, siNm, sggNm, emdNm, liNm, rn, udrtYn, buldMnnm, buldSlno, mtYn, lnbrMnnm, lnbrSlno, emdNo) {
-        console.log("roadFullAddr =>", roadFullAddr);
-        console.log("roadAddrPart1 =>", roadAddrPart1);
-        console.log("addrDetail =>", addrDetail);
-        console.log("roadAddrPart2 =>", roadAddrPart2);
-        console.log("engAddr =>", engAddr);
-        console.log("jibunAddr =>", jibunAddr);
-        console.log("zipNo =>", zipNo);
-        console.log("admCd =>", admCd);
-        console.log("rnMgtSn =>", rnMgtSn);
-        console.log("bdMgtSn =>", bdMgtSn);
-        console.log("detBdNmList =>", detBdNmList);
-        console.log("bdNm =>", bdNm);
-        console.log("bdKdcd =>", bdKdcd);
-        console.log("siNm =>", siNm);
-        console.log("sggNm =>", sggNm);
-        console.log("emdNm =>", emdNm);
-        console.log("liNm =>", liNm);
-        console.log("rn =>", rn);
-        console.log("udrtYn =>", udrtYn);
-        console.log("buldMnnm =>", buldMnnm);
-        console.log("buldSlno =>", buldSlno);
-        console.log("mtYn =>", mtYn);
-        console.log("lnbrMnnm =>", lnbrMnnm);
-        console.log("lnbrSlno =>", lnbrSlno);
-        console.log("emdNo =>", emdNo);
-        //window.vueObj.fnResult(roadFullAddr, roadAddrPart1, addrDetail, engAddr);
-}
+    
     const app = Vue.createApp({
         data() {
             return {
@@ -101,6 +74,35 @@
         mounted() {
             // 처음 시작할 때 실행되는 부분
             let self = this;
+
+            window.jusoCallBack = function(roadFullAddr, roadAddrPart1, addrDetail, roadAddrPart2, engAddr, jibunAddr, zipNo, admCd, rnMgtSn, bdMgtSn, detBdNmList, bdNm, bdKdcd, siNm, sggNm, emdNm, liNm, rn, udrtYn, buldMnnm, buldSlno, mtYn, lnbrMnnm, lnbrSlno, emdNo) {
+        console.log("roadFullAddr =>", roadFullAddr);
+        console.log("roadAddrPart1 =>", roadAddrPart1);
+        console.log("addrDetail =>", addrDetail);
+        console.log("roadAddrPart2 =>", roadAddrPart2);
+        console.log("engAddr =>", engAddr);
+        console.log("jibunAddr =>", jibunAddr);
+        console.log("zipNo =>", zipNo);
+        console.log("admCd =>", admCd);
+        console.log("rnMgtSn =>", rnMgtSn);
+        console.log("bdMgtSn =>", bdMgtSn);
+        console.log("detBdNmList =>", detBdNmList);
+        console.log("bdNm =>", bdNm);
+        console.log("bdKdcd =>", bdKdcd);
+        console.log("siNm =>", siNm);
+        console.log("sggNm =>", sggNm);
+        console.log("emdNm =>", emdNm);
+        console.log("liNm =>", liNm);
+        console.log("rn =>", rn);
+        console.log("udrtYn =>", udrtYn);
+        console.log("buldMnnm =>", buldMnnm);
+        console.log("buldSlno =>", buldSlno);
+        console.log("mtYn =>", mtYn);
+        console.log("lnbrMnnm =>", lnbrMnnm);
+        console.log("lnbrSlno =>", lnbrSlno);
+        console.log("emdNo =>", emdNo);
+        //window.vueObj.fnResult(roadFullAddr, roadAddrPart1, addrDetail, engAddr);
+}
         }
     });
 

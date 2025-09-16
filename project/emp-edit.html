@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>고객정보 수정</title>
+    <title>직원정보 수정</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
@@ -75,6 +75,11 @@
             cursor: pointer;
         }
 
+        #delete{
+            background-color: red;
+            color: white;
+        }
+
         input[type="file"] {
             height: 30px;
             line-height: 30px;
@@ -87,57 +92,55 @@
             text-align: left;
         }
 
-        #delete{
-            background-color: red;
-            color: white;
-        }
-
     </style>
 </head>
 <body>
     <div id="app">
         <!-- html 코드는 id가 app인 태그 안에서 작업 -->
       <div id="container">
-        <div><h2>고객 정보 수정</h2></div>
+        <div><h2>직원 정보 수정</h2></div>
 
         <div class="box">
         <table>
             <tr>
-                <th>고객번호</th>
-                <td>{{info.cusNo}}</td>
+                <th>사번</th>
+                <td>{{info.empNo}}</td>
             </tr>
             <tr>
-                <th>고객명</th>
-                <td><input v-model="info.cName"></td>
+                <th>직원명</th>
+                <td><input v-model="info.eName"></td>
             </tr>
             <tr>
-                <th>생년월일</th>
-                <td><input v-model="info.BIR"></td>
+                <th>소속</th>
+                <td><input v-model="info.dept"></td>
             </tr>
             <tr>
-                <th>성별</th>
-                <td><input v-model="info.gender"></td>
+                <th>직책</th>
+                <td><input v-model="info.position"></td>
             </tr>
             <tr>
-                <th>휴대전화</th>
-                <td><input v-model="info.phone"></td>
+                <th>권한</th>
+                <td>
+                    <select v-model="info.status">
+                        <option value="S">:: 관리자(S) ::</option>
+                        <option value="A">:: 임직원(A) ::</option>
+                        <option value="P">:: 설계사(P) ::</option>
+                    </select>
+                </td>
             </tr>
             <tr>
-                <th>주소</th>
-                <td><input v-model="info.addr"></td>
+                <th>내선번호</th>
+                <td><input v-model="info.ph"></td>
             </tr>
             <tr>
-                <th>가입상품</th>
-                <td>{{info.P_NAME}}</td>
-            </tr>
-            <tr>
-                <th>고객등록일</th>
-                <td>{{info.SIGNDATE}}</td>
+                <th>입사일</th>
+                <td><input type=date v-model="info.REG"></td>
             </tr>
          </table>                
 
-         <div id="info">※ 고객명, 생년월일, 성별 변경 시 서류 첨부 필수! (초본(개명이력), 현재 신분증) </div>
+         <div id="info">※ 개명으로 인한 이름 변경 시 서류 첨부 필수! (초본(개명이력), 현재 신분증) </div>
          <div id="info">※ 서류는 변경 시점으로부터 3개월 이내 발급 본이어야하며, 신분증은 진위여부 확인 필수</div>
+         <div id="info">※ 입사일 변경은 착오로 인한 부득이한 경우에만 해당하며 소명자료 필수 첨부해야 함.</div>
         
          <form @submit.prevent="fnUpload">
             <input type="file" ref="fileInput" accept="image/*" required />
@@ -146,9 +149,9 @@
         </div>
         
         <div class="bottomBtn">
-            <button id="delete" @click="fnDelete(info.cusNo)">고객삭제</button>
+            <button id="delete" @click="fnDelete(info.empNo)">직원삭제</button>
             <button @click="fnUpdate">수정반영</button>
-            <button @click="fnClose">닫기</button>
+            <button @click="fnBack">목록으로</button>
         </div>
 
       </div>
@@ -160,24 +163,24 @@
     const app = Vue.createApp({
         data() {
             return {
-                // 변수 - (key : value)
-                cusNo : "",
+                // 변수 - (key : value)                
                 info : {},
+                empNo : "",
                 uploadResult: null // 업로드 결과 저장
             };
         },
         methods: {
             // 함수(메소드) - (key : function())
 
-            // 기존 고객 정보 가져오기
-            fnCusInfo: function () {
+            // 기존 직원 정보 가져오기
+            fnEmpInfo: function () {
                 let self = this;           
                 
                 $.ajax({
-                    url: "http://localhost:3009/cus/info",
+                    url: "http://localhost:3009/pro-emp/info",
                     dataType: "json",
                     type: "GET",
-                    data: {cusNo : self.cusNo},
+                    data: {empNo : self.empNo},
                     success: function (data) {
                         self.info = data.info; 
                         // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
@@ -191,42 +194,41 @@
                 let self = this;           
                 
                 $.ajax({
-                    url: "http://localhost:3009/cus/update",
+                    url: "http://localhost:3009/emp/update",
                     dataType: "json",
                     type: "GET",
                     data: self.info,
                     success: function (data) {
                         alert("수정되었습니다.");
-                        location.href="cus-view.html?cusNo="+self.cusNo;
+                        location.href="cus-view.html?empNo="+self.empNo;
                     }
                 });
             },
 
-            // "고객삭제" 버튼
-            fnDelete: function(cusNo){
+            // "직원삭제" 버튼
+            fnDelete: function(empNo){
                 let self = this;
-                if(!confirm("등록된 고객을 정말 삭제하시겠습니까?\n 소속 팀장 및 관리자와 협의된 내용인지 확인하여 진행 바랍니다.")){
+                if(!confirm("해당 직원 정보를 삭제하시겠습니까?\n 정산 및 지급, 서류 발송 및 신고 처리가 모두 완료되었는지 확인 후 눌러주세요.")){
                     return;
                 }
                 $.ajax({
-                    url: "http://localhost:3009/cus/delete", 
+                    url: "http://localhost:3009/pro-emp/delete", 
                     dataType: "json", // 내가 리턴받는 데이터 타입
                     type: "GET", 
-                    data: {cusNo : cusNo}, // 서버 호출결과값이 담기는 곳 
+                    data: {empNo : empNo}, // 서버 호출결과값이 담기는 곳 
                     success: function (data) {
                         if(data.result == "success"){
-                            alert("고객정보가 삭제되었습니다.");
-                            location.href="customers.html";
+                            alert("직원 정보가 삭제되었습니다. (퇴사처리 완료)");
+                            location.href="emp.html";
                         }
                     }
                 });
                
             },
 
-            // "닫기" 버튼
-            fnClose:function(){
-                window.close();
-
+            // "목록으로" 버튼
+            fnBack : function(){
+                location.href = "emp.html";
             },
 
             // 이미지 업로드
@@ -265,10 +267,11 @@
             
             // 파라미터 받아오는 구문!(아래두줄)
             const queryParams = new URLSearchParams(window.location.search);
-            self.cusNo = queryParams.get('cusNo') || ''; 
+            self.empNo = queryParams.get('empNo') || ''; 
 
-            if(self.cusNo != ""){ // self.empNo가 빈값이 아니라면 (값이 들어가있다면)
-                self.fnCusInfo(); // 이 함수 바로 실행
+            if(self.empNo != ""){ // self.empNo가 빈값이 아니라면 (값이 들어가있다면)
+                // console.log(self.empNo); 잘 받아와짐
+                self.fnEmpInfo(); // 이 함수 바로 실행
             }
         }
     });
