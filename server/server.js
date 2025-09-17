@@ -562,15 +562,37 @@ app.get('/notice', async (req, res) => {
   }
 });
 
+// 공지사항 새 글 쓰기 (인서트)
+app.get('/notice/insert', async (req, res) => {
+  const { type, title, contents, writer } = req.query;
+
+  try {
+    await connection.execute(
+      `INSERT INTO NOTICE(BOARDNO, TYPE, TITLE, CONTENTS, WRITER, CDATE) `
+      +`VALUES(SEQ_NOTICE.NEXTVAL, :type, :title, :contents, :writer, SYSDATE)`,
+      [type, title, contents, writer], // 윗줄에서 :으로 참조할 값 <- 여기 넣기
+      { autoCommit: true }   
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
 // 공지사항 상세
 app.get('/notice/info', async (req, res) => {
   const { boardNo } = req.query;
   try {
     const result = await connection.execute(
-      // 보낸 값들에 대해서 각각 별칭 붙이기(별칭 ""로 감싸줘야 대소문자 구분됨)
-      `SELECT N.*, BOARDNO "boardNo", TYPE "type", TITLE "title", WRITER "writer", `
-      + `TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE, CONTENTS "contents" `
+      `SELECT BOARDNO, TYPE, TITLE, WRITER, `
+      + `TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE, `
+      + `DBMS_LOB.SUBSTR(CONTENTS, 4000, 1) AS CONTENTS, `
+      + `E.EMPNO AS WRITER_EMPNO `
       + `FROM NOTICE N `
+      + `INNER JOIN EMPLOYEE E ON N.WRITER = E.ENAME `
       + `WHERE BOARDNO = ${boardNo}` // 내가 파라미터로 보낸값
     );
     const columnNames = result.metaData.map(column => column.name);
@@ -594,6 +616,148 @@ app.get('/notice/info', async (req, res) => {
   }
 });
 
+// 공지 수정
+app.get('/notice/update', async (req, res) => {
+  const { type, title, contents, boardNo } = req.query;
+
+  try {
+    await connection.execute(
+      `UPDATE NOTICE SET `
+      + `TYPE = :type, TITLE = :title, CONTENTS = :contents `
+      + `WHERE BOARDNO = :boardNo`,
+      [type, title, contents, boardNo ], // 윗줄에서 :으로 접근해서 참조할 값(순서지키기!)
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
+// 공지 삭제
+app.get('/notice/delete', async (req, res) => {
+  const { boardNo } = req.query;
+
+  try {
+    await connection.execute(      
+      `DELETE FROM NOTICE WHERE BOARDNO = '${boardNo}'`,
+      [], // 여길 비우고 위처럼 백틱써도됨 
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing delete', error);
+    res.status(500).send('Error executing delete');
+  }
+});
+
+// 경조사 게시판 (더보기 눌러서 접속)
+app.get('/event', async (req, res) => {
+  const { } = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT BOARDNO, TYPE, TITLE, WRITER, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE `
+      + `FROM EVENT `
+      + `ORDER BY BOARDNO DESC`
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴
+    res.json({
+        result : "success",
+        list : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 경조사 게시글 상세
+app.get('/event/info', async (req, res) => {
+  const { boardNo } = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT BOARDNO, TYPE, TITLE, WRITER, `
+      + `TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE, `
+      + `DBMS_LOB.SUBSTR(CONTENTS, 4000, 1) AS CONTENTS, `
+      + `E.EMPNO AS WRITER_EMPNO `
+      + `FROM EVENT V `
+      + `LEFT JOIN EMPLOYEE E ON V.WRITER = E.ENAME `
+      + `WHERE BOARDNO = ${boardNo}` // 내가 파라미터로 보낸값
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴 (키-밸류 형태)
+    res.json({
+        result : "success",
+        info : rows[0] // 어차피 해당하는 pk값은 하나일테니
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 경조사 게시글 삭제
+app.get('/event/delete', async (req, res) => {
+  const { boardNo } = req.query;
+
+  try {
+    await connection.execute(      
+      `DELETE FROM EVENT WHERE BOARDNO = '${boardNo}'`,
+      [], // 여길 비우고 위처럼 백틱써도됨 
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing delete', error);
+    res.status(500).send('Error executing delete');
+  }
+});
+
+// 경조사 새 글 쓰기 (인서트)
+app.get('/event/insert', async (req, res) => {
+  const { type, title, contents, writer } = req.query;
+
+  try {
+    await connection.execute(
+      `INSERT INTO EVENT(BOARDNO, TYPE, TITLE, CONTENTS, WRITER, CDATE) `
+      +`VALUES(SEQ_EVENT.NEXTVAL, :type, :title, :contents, :writer, SYSDATE)`,
+      [type, title, contents, writer], // 윗줄에서 :으로 참조할 값 <- 여기 넣기
+      { autoCommit: true }   
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
 
 // 고객조회화면
 app.get('/cusList', async (req, res) => {
@@ -943,6 +1107,146 @@ app.get('/prod/list', async (req, res) => {
     res.status(500).send('Error executing query');
   }
 });
+
+// 계약관리(계약조회) 리스트
+app.get('/contract/list', async (req, res) => {
+  const { offset, pageSize, option, keyword} = req.query;
+  
+  // 검색관련
+  let subQuery = "";
+  if(option == "all"){
+    subQuery = `WHERE CNAME LIKE '%${keyword}%' OR BL_NO LIKE '%${keyword}%'`;
+  } else if(option == "cname"){
+    subQuery = `WHERE CNAME LIKE '%${keyword}%'`;
+  } else if(option == "bl"){ 
+    subQuery = `WHERE BL_NO LIKE '%${keyword}%'`;
+  } // 나중에 다른 옵션이 생길 수 있으니 그냥 else는 x
+
+  try {
+    const result = await connection.execute(
+      `SELECT BL_NO, CNAME, PNAME, FEE, TO_CHAR(SDATE, 'YYYY-MM-DD') AS SDATE, CHARGE FROM CONTRACT C `
+     + `${subQuery} `
+     +`OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY` // 몇페이지씩 건너뛸건지
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+
+    const count = await connection.execute(
+      `SELECT COUNT(*) FROM CONTRACT`
+    );
+
+    // 리턴
+    res.json({
+        result : "success",
+        list : rows,
+        count : count.rows[0][0] // 게시글 개수 구하려고 이 내용 추가함
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// VOC 모니터링 리스트(기본화면)
+app.get('/voc/list', async (req, res) => {
+  const {  } = req.query;  
+  try {
+    const result = await connection.execute(
+      `SELECT VOC_NO, TYPE, VNAME, TITLE, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE, CHARGE `
+    + `FROM VOC `
+    + `ORDER BY VOC_NO DESC` 
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴 (키-밸류 형태)
+    res.json({
+        result : "success",
+        list : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// VOC 내용 상세보기
+app.get('/voc/info', async (req, res) => {
+  const { vocNo } = req.query;
+  try {
+    const result = await connection.execute(
+      // 보낸 값들에 대해서 각각 별칭 붙이기(별칭 ""로 감싸줘야 대소문자 구분됨)
+      `SELECT VOC_NO, TYPE, TITLE, VNAME, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE, `
+      + `TO_CHAR(CONTENTS) AS CONTENTS, CHARGE, COMMENTS, CLEAR `
+      + `FROM VOC `
+      + `WHERE VOC_NO = ${vocNo}` // 내가 파라미터로 보낸값
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+
+      return obj;
+    });
+    // 리턴 (키-밸류 형태)
+    res.json({
+        result : "success",
+        info : rows[0] // 어차피 해당하는 pk값은 하나일테니
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 계약 차트 
+app.get('/contract/chart', async (req, res) => {
+  try {
+    const result = await connection.execute(
+      `SELECT BRANCH, SUM(FEE) AS TOTAL_FEE `
+    + `FROM CONTRACT `
+    + `GROUP BY BRANCH `
+    + `ORDER BY TOTAL_FEE DESC`
+    );
+
+    const columnNames = result.metaData.map(column => column.name);
+    const rows = result.rows.map(row => {
+      const obj = {};
+      columnNames.forEach((col, idx) => {
+        obj[col] = row[idx];
+      });
+      return obj;
+    });
+
+    res.json({
+      result: "success",
+      chartData: rows
+    });
+  } catch (error) {
+    console.error('Error executing chart query', error);
+    res.status(500).send('Error executing chart query');
+  }
+});
+
 
 
 // 서버 시작

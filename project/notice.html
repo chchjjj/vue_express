@@ -21,7 +21,7 @@
         }
 
         th{
-            background-color: rgb(241, 199, 247);
+            background-color: rgb(230, 210, 233);
             color: rgb(19, 18, 18);
         }
 
@@ -218,7 +218,7 @@
 
             // 글쓰기 버튼
             fnAdd : function(){
-                window.open(`notice-add.html`, "noticeAdd", "width=800, height=800");
+                location.href = "notice-add.html?empNo="+self.empNo;
             },
 
             // 우측 상단 '처음으로' 버튼

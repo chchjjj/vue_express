@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>경조사 게시판</title>
+    <title>VOC(민원)</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
@@ -15,13 +15,13 @@
             text-align: center;
             width: 1000px;
             margin-left: 100px;
-            margin-top: 70px;
+            margin-top: 40px;
             table-layout: auto;
-            white-space: nowrap;
+            white-space: nowrap;            
         }
 
         th{
-            background-color: rgb(241, 199, 247);
+            background-color: rgb(192, 223, 206);
             color: rgb(19, 18, 18);
         }
 
@@ -38,7 +38,7 @@
             box-shadow: 2px 2px 2px rgb(202, 201, 201);
             margin: 50px auto;
             /* text-align: center; */
-            position: relative; /* 추가 */ 
+            position: relative; /* 추가 */             
         }
 
         #container img {
@@ -61,65 +61,32 @@
 
         h1{
             margin-left: 100px;
+            margin-bottom: 20px;
+        }        
+
+        .menu{
+            width: 1000px;
+            height: 70px;
+            background-color: rgb(174, 173, 240);
+            color: white;
+            margin: 0px 100px;
+            line-height: 70px;
         }
 
-        .index{ /* 페이징 */
-            margin-right: 30px; /* 숫자 간 간격*/
-            text-decoration: none; /* 숫자 밑줄 지우기 */
-            color: black;
-            font-size: 20px;            
-        }
-
-        .page{
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        .bottom{
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-        }
-
-        .bottom #noticeAdd{
-            margin-left: 100px;
-            font-size: 15px;
-            cursor: pointer;
-            width: 100px;
-        }
-
-        input{
-            height: 22px;
-            margin-right: 5px;
-        }
-
-        select{
-            height: 25px;
-            margin-right: 5px;
-        }
-
-        #search{
-            text-align: right;
-            margin-right: 100px;
-        }
-
-        #search button{
-            width: 53px;
-            height: 26.7px;
-            font-size: 15px;
+        .menu span{
+            font-size: 22px;
+            margin: 0px 90px;
             cursor: pointer;
         }
-
+        
         #info{
-            margin-top: 10px;
             margin-left: 100px;
-            color: rgb(103, 112, 238);
+            color: red;
         }
 
         a{
             text-decoration: none;
-            color: black;
-            cursor: pointer;
+            color: black
         }
 
     </style>
@@ -135,45 +102,35 @@
                 <button id="topBtn" @click="fnLogout">로그아웃</button>
             </span>
         </div>
-        <div><h1>경조사 게시판</h1></div>
+        <div><h1>VOC 민원관리</h1></div>
+        
+        <div class="menu">
+            <span @click="">예상민원 접수</span>
+            <span @click="">금감원 민원 접수</span>
+            <span @click="">민원 모니터링</span>
+        </div>
+
+        <div id="info">※ 최근 금감원 민원 접수가 증가하고 있습니다. <BR>임직원 분들은 본부내 각별한 주의 및 교육 부탁드립니다.</div>
+        
         <table>
             <tr>
-                <th>순번</th>
+                <th>민원번호</th>
                 <th>종류</th>
+                <th>민원인</th>
                 <th>제목</th>
-                <th>작성자</th>
-                <th>작성일</th>
+                <th>접수일</th>
+                <th>담당자</th>
             </tr>
             <tr v-for="item in list">
-                <td>{{item.BOARDNO}}</td>
+                <td>{{item.VOC_NO}}</td>
                 <td>{{item.TYPE}}</td>
-                <td @click="fnView(item.BOARDNO)"><a>{{item.TITLE}}</a></td>
-                <td>{{item.WRITER}}</td>
+                <td>{{item.VNAME}}</td>
+                <td><a href="javascript:;" @click="fnVocView(item.VOC_NO)">{{item.TITLE}}</a></td>
                 <td>{{item.CDATE}}</td>
+                <td>{{item.CHARGE}}</td>
             </tr>
         </table>
-        <!-- <div class="page">
-            <a class="index" href="javascript:;" v-for="num in index" @click="fnPage(num)">
-                <span v-if="num == page" style="color: rgb(0, 4, 255); font-weight: bold;">{{num}}</span> 
-                <span v-else>{{num}}</span>
-            </a>
-        </div> -->
 
-        <div class="bottom">
-            <button id="noticeAdd" @click="fnAdd" :disabled="status == 'P'">글쓰기</button>
-            <div id="search">
-            <select v-model="option">
-                <option value="title">:: 제목 ::</option>
-                <option value="writer">:: 작성자 ::</option>    
-                <!-- 여기 value 값들이 v-model="option"에 들어감 (뷰의 특징) -->
-            </select>  
-            <input v-model="keyword" @keyup.enter="fnList" placeholder="검색어 입력">
-            <!-- v-model로 입력한 값을 바로 keyword에 넣기 -->
-            <!-- @keyup.enter="" : 엔터누를 때 ""안의 값을 실행하겠다 -->
-            <button @click="fnList">검색</button>
-            </div>
-        </div>
-        <div id="info">※ 경조사 게시판 글쓰기는 임직원만 가능합니다.</div>
         <div><img src="media/logo.PNG"></div>
       </div>
     </div>
@@ -186,39 +143,73 @@
             return {
                 // 변수 - (key : value)
                 list : [],
-                status : "", // 로그인 정보 중 권한 파악 위해 (빈값이면 비로그인 상태)
+                index : 0, // 표현할 페이지 개수
+                pageSize : 15, // 한 페이지에 보여줄 게시글 수
+                page : 1, // 현재 페이지(위치)(기본은 1) 구분할 수 있게 스타일 주기
                 keyword : "", // 검색창input에 넣은 값이 v-model로 여기에 바로 들어감
-                option : "title" // option value 기본값
+                option : "all", // option value가 all (::전체::)이 기본값으로 들어감
+                status : "" // 로그인 정보 중 권한 파악 위해 (빈값이면 비로그인 상태)
             };
         },
         methods: {
             // 함수(메소드) - (key : function())
-            fnList: function () {
+            fnCusList: function () {
                 let self = this;
                 let param = {
                     option : self.option,
-                    keyword : self.keyword
+                    keyword : self.keyword,
+                    pageSize : self.pageSize,
+                    offset : (self.page -1) * self.pageSize
+                    // 몇개씩 건너뛸 것인가 (페이징)
                 };
                 $.ajax({
-                    url: "http://localhost:3009/event",
+                    url: "http://localhost:3009/voc/list",
                     dataType: "json",
                     type: "GET",
                     data: param,
                     success: function (data) {
                         self.list = data.list;
+                        self.index = Math.ceil(data.count/self.pageSize);
+                        // 총 게시글 개수를 페이지 수로 나누고, 소수점일 경우 올림 처리
                     }
                 });
             },
 
-            // 제목 눌렀을 때
-            fnView : function(boardNo){
+            fnPage: function(num){
                 let self = this;
-                location.href="event-view.html?boardNo="+boardNo;
+                self.page = num;
+                self.fnCusList();
             },
 
-            // 글쓰기 버튼
-            fnAdd : function(){
-                location.href= "event-add.html";
+            fnBasic: function () {
+                let self = this;
+                let param = {};
+                $.ajax({
+                    url: "http://localhost:3009/pro-basic",
+                    dataType: "json",
+                    type: "GET",
+                    data: {empNo : self.empNo},
+                    success: function (data) {
+                        self.list = data.empList;
+                    }
+                });
+               
+            },
+
+            // 제목 클릭 
+            fnVocView : function(vocNo){
+                location.href="voc-view.html?vocNo="+vocNo;
+            },
+
+            // 고객 '상세정보' 버튼
+            fnCusInfo : function(cusNo){
+                let self = this;                       
+                window.open(`cus-view.html?cusNo=${cusNo}`, "_blank");
+            },
+
+            // 고객등록 
+            fnCusAdd : function(){
+                window.open(`cus-add.html`, "cusAdd", "width=800, height=800");
             },
 
             // 우측 상단 '처음으로' 버튼
@@ -245,7 +236,9 @@
             let self = this;
             self.empNo = sessionStorage.getItem("sessionId");
             self.status = sessionStorage.getItem("sessionStatus");
-            self.fnList();
+            self.fnBasic();
+            self.fnCusList();
+            console.log(self.status);
         }
     });
 

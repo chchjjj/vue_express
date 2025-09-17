@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>글쓰기(공지사항)</title>
+    <title>글쓰기(경조사)</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
@@ -74,16 +74,15 @@
     <div id="app">
         <!-- html 코드는 id가 app인 태그 안에서 작업 -->
       <div id="container">
-        <div><h2>글쓰기 (공지사항)</h2></div>
+        <div><h2>글쓰기 (경조사)</h2></div>
 
         <div class="box">
         <table>
             <tr>
                 <th>종류</th>
                 <td>
-                    <label><input type="radio" v-model="type" value="전사공지" name="type" checked> 전사공지</label>
-                    <label><input type="radio" v-model="type" value="업무공지" name="type"> 업무공지</label>
-                    <label><input type="radio" v-model="type" value="설계사공지" name="type"> 설계사공지</label>
+                    <label><input type="radio" v-model="type" value="전사공지" name="type" checked>축하</label>
+                    <label><input type="radio" v-model="type" value="업무공지" name="type">애도</label>
                 </td>
             </tr>
             <tr>
@@ -117,7 +116,7 @@
                 empNo : "",
                 boardNo : "",
                 info : {},
-                type : "전사공지",
+                type : "축하",
                 title : "",
                 writer : "",
                 contents : ""
@@ -126,7 +125,7 @@
         methods: {
             // 함수(메소드) - (key : function())
 
-            // 공지사항 글쓰기에서 작성자는 자동으로 가져오기
+            // 글쓰기에서 작성자는 자동으로 가져오기
             fnInfo: function () {
                 let self = this;           
                 
@@ -156,19 +155,19 @@
                 }    
 
                 $.ajax({
-                    url: "http://localhost:3009/notice/insert",
+                    url: "http://localhost:3009/event/insert",
                     dataType: "json",
                     type: "GET",
                     data: param,
                     success: function (data) {
                         alert("등록이 완료되었습니다.");                                
-                            location.href="notice.html";                       
+                            location.href="event.html";                       
                     }
                 });
             },
 
             fnBack : function(){
-                location.href="notice.html";
+                location.href="event.html";
             }
             
         }, // methods

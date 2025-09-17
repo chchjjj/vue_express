@@ -6,6 +6,8 @@
     <title>더조은손해보험 통합관리시스템</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 차트 관련 스크립트 추가! -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <style>
         table, tr, td, th{
@@ -36,7 +38,9 @@
             box-shadow: 2px 2px 2px rgb(202, 201, 201);
             margin: 50px auto;
             /* text-align: center; */   
-            position: relative; /* 추가 */         
+            position: relative; /* 추가 */       
+
+            flex-wrap: wrap;  /* 화면 크기 조정 시 자동으로 줄 바꿈 */
         }
 
         #container img {
@@ -79,13 +83,48 @@
             cursor: pointer;
         }
 
-        .box{
+        .box1{
+            width: 480px;
+            height: 265px;
+            border: 1px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            margin-left: 100px;
+            margin-top : 40px;
+            margin-bottom: 40px;
+            float: left;
+        }
+
+        .box2{
             width: 480px;
             height: 250px;
             border: 1px solid rgb(163, 162, 162);
             border-radius: 20px;
             margin-left: 100px;
-            margin-top : 40px
+            clear: both;
+            float: left;
+        }
+
+        .box3{
+            width: 480px;
+            height: 250px;
+            border: 1px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            margin-left: 30px;
+            margin-top: 40px;
+            display: inline-block; 
+                      
+        }
+
+        .box3 button{
+            width: 180px;
+            height: 40px;
+            margin-left: 20px;
+            margin-bottom: 20px;
+            background-color: rgba(203, 243, 219, 0.781);
+            border: 1px solid rgb(163, 162, 162);
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
         }
 
         h3{
@@ -106,6 +145,16 @@
             margin-left: 10px;
             width: 100px;
             cursor: pointer;
+        }
+
+        #chart{
+            float: left;
+            width: 480px;
+            height: 250px;
+            border: 1px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            margin-top : 40px;
+            margin-left: 30px;            
         }
 
     </style>
@@ -129,11 +178,11 @@
             <span @click="fnCus">고객조회</span>
             <span @click="fnEmp">직원조회</span>
             <span @click="fnProd">상품조회</span>
-            <span>계약관리</span>
-            <span>VOC(민원)</span>
+            <span @click="fnContract">계약관리</span>
+            <span @click="fnVoc">VOC(민원)</span>
         </div>
         
-        <div class="box">
+        <div class="box1">
             <h3>공지사항</h3>
             <ul>                
                 <li v-for="notice in noticeList">
@@ -145,12 +194,14 @@
                 <a href="notice.html"><button>더보기</button></a>
             </div>
         </div>
+
+        <div id="chart"></div>
         
-        <div class="box">
+        <div class="box2">
             <h3>경조사</h3>
             <ul>                
                 <li v-for="event in eventList">
-                {{event.TYPE}}) {{event.TITLE}} ({{event.CDATE}})
+                {{event.TYPE}} {{event.TITLE}} ({{event.CDATE}})
                 </li>
             </ul>
             <div class="info">
@@ -158,6 +209,21 @@
                 <a href="event.html"><button>더보기</button></a>
             </div>
         </div>
+
+        <div class="box3">
+            <h3>업무 참고 사이트</h3>
+            <div>
+                <a href="https://edu.fsec.or.kr/" target="_blank"><button>금융보안원 교육센터</button></a>
+
+            </div>
+            <div>
+                <a href="https://www.in.or.kr/main/index.asp" target="_blank"><button>보험연수원 홈페이지</button></a>
+            </div>
+           <div>
+                <a href="https://www.fss.or.kr/fss/main/main.do?menuNo=200000" target="_blank"><button>금융감독원 홈페이지</button></a>
+           </div>
+        </div>
+
         <div><img src="media/logo.PNG"></div>
       </div>
       
@@ -173,7 +239,89 @@
                 empList : [],
                 empNo : "",
                 noticeList : [],
-                eventList : []
+                eventList : [],
+
+                // 차트 내용
+                options : {
+                series: [{
+                    name: 'Inflation',
+                    data: []                    
+                }],
+                chart: {
+                    height: 250,
+                    type: 'bar',
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 10,
+                        dataLabels: {
+                            position: 'top', // top, center, bottom
+                        },
+                    }
+                },
+
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val) {
+                        return val + "원";
+                    },
+                    offsetY: -20,
+                    style: {
+                        fontSize: '14px',
+                        colors: ["#304758"]
+                    }
+                },
+                    
+                xaxis: {
+                    categories: [], 
+                    position: 'top',
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    },
+                    crosshairs: {
+                        fill: {
+                            type: 'gradient',
+                            gradient: {
+                                colorFrom: '#D8E3F0',
+                                colorTo: '#BED1E6',
+                                stops: [0, 100],
+                                opacityFrom: 0.4,
+                                opacityTo: 0.5,
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                    }
+                },
+                yaxis: {
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false,
+                    },
+                    labels: {
+                        show: false,
+                        formatter: function (val) {
+                        return val + "%";
+                        }
+                    }
+                    
+                },
+                title: {
+                    text: '본부별 실적 현황',
+                    floating: true,
+                    offsetY: 220,
+                    align: 'center',
+                    style: {
+                        color: '#444'
+                    }
+                }
+            }
             };
         },
         methods: {
@@ -222,6 +370,16 @@
                 location.href="products.html";
             },
 
+            // 계약관리 버튼
+            fnContract: function(){
+                location.href="contract.html";
+            },
+
+            // VOC 버튼
+            fnVoc: function(){
+                location.href="voc.html";
+            },
+
             // 공지사항, 경조사 게시판 뜨도록 하기 (바로 실행)
             fnNotice: function () {
                 let self = this;
@@ -249,16 +407,55 @@
                         self.eventList = data.eventList;
                     }
                 });               
-            }
+            },
+
+            // 차트 실행 함수
+            fnChart : function () {
+                let self = this;
+                // let param = {
+                //     option : self.option,
+                //     keyword : self.keyword,
+                //     pageSize : self.pageSize,
+                //     offset : (self.page -1) * self.pageSize
+                //     // 몇개씩 건너뛸 것인가 (페이징)
+                // };
+                $.ajax({
+                    url: "http://localhost:3009/contract/chart",
+                    dataType: "json",
+                    type: "GET",
+                    //data: param,
+                    success: function (data) {
+                        let feeList = [];
+                        let branchList = [];
+                        // for(let i=0; i<data.list.length; i++){
+                        //     feeList.push(data.list[i].FEE);
+                        //     branchList.push(data.list[i].BRANCH);
+                        // }
+
+                        data.chartData.forEach(item => {
+                        feeList.push(item.TOTAL_FEE);
+                        branchList.push(item.BRANCH);
+                        });
+                        
+                        self.options.series[0].data = feeList;                        
+                        self.options.xaxis.categories = branchList;
+
+                        // 차트실행
+                        var chart = new ApexCharts(document.querySelector("#chart"), self.options);
+                        chart.render(); 
+                    }
+                });
+            },
 
         }, // methods
         mounted() {
             // 처음 시작할 때 실행되는 부분
             let self = this;
-            self.empNo = sessionStorage.getItem("sessionId");
+            self.empNo = sessionStorage.getItem("sessionId");            
             self.fnBasic();
             self.fnNotice();
-            self.fnEvent();
+            self.fnEvent();            
+            self.fnChart();            
         }
     });
 
