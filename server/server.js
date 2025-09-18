@@ -720,6 +720,27 @@ app.get('/event/info', async (req, res) => {
   }
 });
 
+// 경조사 수정
+app.get('/event/update', async (req, res) => {
+  const { type, title, contents, boardNo } = req.query;
+
+  try {
+    await connection.execute(
+      `UPDATE EVENT SET `
+      + `TYPE = :type, TITLE = :title, CONTENTS = :contents `
+      + `WHERE BOARDNO = :boardNo`,
+      [type, title, contents, boardNo ], // 윗줄에서 :으로 접근해서 참조할 값(순서지키기!)
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
 // 경조사 게시글 삭제
 app.get('/event/delete', async (req, res) => {
   const { boardNo } = req.query;
@@ -1108,6 +1129,54 @@ app.get('/prod/list', async (req, res) => {
   }
 });
 
+// 새 상품 등록 시 기존등록 여부 확인
+app.get('/prodChk', async (req, res) => {
+  const {pNo} = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT * FROM PRODUCTS WHERE P_NO = '${pNo}'`
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴
+    res.json({
+        result : "success",
+        list : rows
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
+// 새 상품 등록(인서트)
+app.get('/prod/insert', async (req, res) => {
+  const { pNo, type, pName, rDate, price, refund, poster } = req.query;
+
+  try {
+    await connection.execute(
+      `INSERT INTO PRODUCTS (P_NO, TYPE, P_NAME, R_DATE, PRICE, REFUND, POSTER) `
+      +`VALUES(:pNo, :type, :pName, :rDate, :price, :refund, :poster)`,
+      [pNo, type, pName, rDate, price, refund, poster], // 윗줄에서 :으로 참조할 값 <- 여기 넣기
+      { autoCommit: true }   
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
 // 계약관리(계약조회) 리스트
 app.get('/contract/list', async (req, res) => {
   const { offset, pageSize, option, keyword} = req.query;
@@ -1155,6 +1224,34 @@ app.get('/contract/list', async (req, res) => {
   }
 });
 
+// 계약 상세조회
+app.get('/contract/info', async (req, res) => {
+  const { blNo } = req.query;
+  try {
+    const result = await connection.execute(
+      `SELECT C.*, TO_CHAR(SDATE, 'YYYY-MM-DD') AS S_DATE FROM CONTRACT C WHERE BL_NO = '${blNo}'` // 내가 파라미터로 보낸값
+    );
+    const columnNames = result.metaData.map(column => column.name);
+    // 쿼리 결과를 JSON 형태로 변환
+    const rows = result.rows.map(row => {
+      // 각 행의 데이터를 컬럼명에 맞게 매핑하여 JSON 객체로 변환
+      const obj = {};
+      columnNames.forEach((columnName, index) => {
+        obj[columnName] = row[index];
+      });
+      return obj;
+    });
+    // 리턴 (키-밸류 형태)
+    res.json({
+        result : "success",
+        info : rows[0] // 어차피 해당하는 pk값은 하나일테니
+    });
+  } catch (error) {
+    console.error('Error executing query', error);
+    res.status(500).send('Error executing query');
+  }
+});
+
 // VOC 모니터링 리스트(기본화면)
 app.get('/voc/list', async (req, res) => {
   const {  } = req.query;  
@@ -1192,8 +1289,10 @@ app.get('/voc/info', async (req, res) => {
     const result = await connection.execute(
       // 보낸 값들에 대해서 각각 별칭 붙이기(별칭 ""로 감싸줘야 대소문자 구분됨)
       `SELECT VOC_NO, TYPE, TITLE, VNAME, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE, `
-      + `TO_CHAR(CONTENTS) AS CONTENTS, CHARGE, COMMENTS, CLEAR `
-      + `FROM VOC `
+      + `TO_CHAR(CONTENTS) AS CONTENTS, CHARGE, COMMENTS, CLEAR, `
+      + `E.EMPNO AS CHARGE_EMPNO `
+      + `FROM VOC V `
+      + `LEFT JOIN EMPLOYEE E ON V.CHARGE = E.ENAME `
       + `WHERE VOC_NO = ${vocNo}` // 내가 파라미터로 보낸값
     );
     const columnNames = result.metaData.map(column => column.name);
@@ -1215,6 +1314,68 @@ app.get('/voc/info', async (req, res) => {
   } catch (error) {
     console.error('Error executing query', error);
     res.status(500).send('Error executing query');
+  }
+});
+
+// VOC 내용 수정 (예상민원, 금감원 동일)
+app.get('/voc/update', async (req, res) => {
+  const { clear, vocNo } = req.query;
+
+  try {
+    await connection.execute(
+      `UPDATE VOC SET `
+      + `CLEAR = :clear `
+      + `WHERE VOC_NO = :vocNo`,
+      [clear, vocNo ], // 윗줄에서 :으로 접근해서 참조할 값(순서지키기!)
+      { autoCommit: true }
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
+
+// VOC 예상민원 새 글 쓰기 (인서트)
+app.get('/voc/ex/insert', async (req, res) => {
+  const { type, vName, title, contents, charge, comments, clear } = req.query;
+
+  try {
+    await connection.execute(
+      `INSERT INTO VOC(VOC_NO, TYPE, VNAME, CDATE, TITLE, CONTENTS, CHARGE, COMMENTS, CLEAR) `
+      +`VALUES(VOC_SEQ.NEXTVAL, :type, :vName, SYSDATE, :title, :contents, :charge, :comments, :clear)`,
+      [type, vName, title, contents, charge, comments, clear], // 윗줄에서 :으로 참조할 값 <- 여기 넣기
+      { autoCommit: true }   
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
+  }
+});
+
+// VOC 금감원 새 글 쓰기 (인서트)
+app.get('/voc/fss/insert', async (req, res) => {
+  const { type, vName, title, contents, charge, comments, clear } = req.query;
+
+  try {
+    await connection.execute(
+      `INSERT INTO VOC(VOC_NO, TYPE, VNAME, CDATE, TITLE, CONTENTS, CHARGE, COMMENTS, CLEAR) `
+      +`VALUES(VOC_SEQ.NEXTVAL, :type, :vName, SYSDATE, :title, :contents, :charge, :comments, :clear)`,
+      [type, vName, title, contents, charge, comments, clear], // 윗줄에서 :으로 참조할 값 <- 여기 넣기
+      { autoCommit: true }   
+    );
+    res.json({
+        result : "success"
+    });
+  } catch (error) {
+    console.error('Error executing insert', error);
+    res.status(500).send('Error executing insert');
   }
 });
 

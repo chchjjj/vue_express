@@ -122,7 +122,7 @@
                 <th>해지형태</th>
                 <th>판매개시일</th>
                 <th>게시자</th>
-                <th>정보수정</th>
+                <th>삭제</th>
             </tr>
             <tr v-for="item in list">
                 <td>{{item.TYPE}}</td>
@@ -132,12 +132,12 @@
                 <td>{{item.REFUND}}</td>
                 <td>{{item.RDATE}}</td>
                 <td>{{item.POSTER}}</td>
-                <td><button @click="fnEdit(item.P_NO)">정보수정</button></td>
+                <td><button @click="fnDelete(item.P_NO)">삭제</button></td>
             </tr>
         </table>
 
         <div class="bottom">
-            <button id="prodAdd" @click="fnProdAdd">새 상품등록</button>                      
+            <button id="prodAdd" @click="fnProdAdd" :disabled="status != 'S'">새 상품등록</button>                      
         </div>        
         <div id="info">※ 상품등록 및 수정은 관리자 권한만 가능합니다.</div>
 
@@ -174,9 +174,9 @@
                 });
             },
 
-            // '정보수정' 버튼
-            fnEdit : function(){
-                let self = this;                       
+            // '정보수정' 버튼 (업데이트 예정)
+            fnDelete : function(){
+                alert("현재 상품 삭제는 상품보전팀 승인 하에 진행됩니다.\n 관리자 통해 개별 연락 바랍니다.");                      
             },
 
             // 새 상품등록 

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계약상세조회</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        table, tr, td, th{
+            border: 1px solid rgb(163, 162, 162);            
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: left;
+            padding-left: 30px;
+            width: 500px;            
+        }
+
+        th{
+            background-color: rgb(233, 238, 228);
+            width: 150px;
+        }
+  
+        body{
+            background-color: rgb(238, 237, 237);
+        }
+
+        tr:nth-child(even){
+            background-color: beige;
+        }
+
+        #container{
+            width: 1000px;
+            height: 800px;
+            border: 2px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;       
+            background-color: white;     
+        }
+
+
+        h2{
+            margin-top: 80px;
+            margin-bottom: 40px;
+        }
+
+        .box{
+            padding-left: 250px; 
+            margin-bottom: 80px;
+        }
+
+        #info{
+            color: rgb(103, 112, 238);
+            margin-bottom: 50px;
+        }
+
+        input{
+            margin-bottom: 20px;
+            height: 23px;
+            border-radius: 5px;
+            margin-left: 20px;
+        }
+
+        button{
+            width: 100px;
+            height: 30px;
+            margin: 10px;
+            background-color: rgb(209, 209, 243);
+            font-size: 14px;
+            border: 3px outset;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div><h2>계약 상세정보</h2></div>
+
+        <div class="box" id="printArea">
+        <table>
+            <tr>
+                <th>증권번호</th>
+                <td>{{info.BL_NO}}</td>
+            </tr>
+            <tr>
+                <th>계약자</th>
+                <td>{{info.CNAME}}</td>
+            </tr>
+            <tr>
+                <th>상품명</th>
+                <td>{{info.PNAME}}</td>
+            </tr>
+            <tr>
+                <th>보험료(월)</th>
+                <td>{{info.FEE}}</td>
+            </tr>
+            <tr>
+                <th>가입일</th>
+                <td>{{info.S_DATE}}</td>
+            </tr>
+            <tr>
+                <th>담당자</th>
+                <td>{{info.CHARGE}}</td>
+            </tr>
+            <tr>
+                <th>담당본부</th>
+                <td>{{info.BRANCH}}</td>
+            </tr>
+        </table>
+        </div>
+
+        <div>
+            <!-- <button onclick="window.print()">증권출력</button> -->
+             <button @click="fnPrint">증권출력</button>
+            <button @click="fnEdit(blNo)">계약수정</button>
+            <button @click="fnClose">뒤로</button>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                blNo : "",
+                info : {}
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            // 고객 정보 가져오기
+            fnInfo: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/contract/info",
+                    dataType: "json",
+                    type: "GET",
+                    data: {blNo : self.blNo},
+                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
+                    // empNo를 파라미터로 보내기
+                    success: function (data) {
+                        self.info = data.info; 
+                        // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
+                        
+                    }
+                });
+            },
+
+
+            // "계약수정" 버튼
+            fnEdit:function(blNo){
+                let self = this;
+                alert("계약수정은 고객센터를 통해서만 가능합니다.\n(업무화면 개발중)");
+                    
+            },
+
+            // "닫기" 버튼
+            fnClose:function(){
+                location.href="contract.html";
+            },
+
+            // 출력버튼
+            fnPrint : function(){
+                let self = this;
+                let initBody;
+                window.onbeforeprint = function(){
+                initBody = document.body.innerHTML;
+                document.body.innerHTML =  document.getElementById('printArea').innerHTML;
+                };
+                window.onafterprint = function(){
+                document.body.innerHTML = initBody;
+                }; 
+                window.print();
+                return false;
+            }
+
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.status = sessionStorage.getItem("sessionStatus");
+            
+            // 파라미터 받아오는 구문!(아래두줄)
+            const queryParams = new URLSearchParams(window.location.search);
+            self.blNo = queryParams.get('blNo') || ''; 
+
+            if(self.blNo != ""){ // self.empNo가 빈값이 아니라면 (값이 들어가있다면)
+                self.fnInfo(); // 이 함수 바로 실행
+            }
+        }
+    });
+
+    app.mount('#app');
+</script>

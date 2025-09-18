@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>금감원 민원 처리</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body{
+            background-color: rgb(238, 237, 237);
+        }
+
+        table, tr, td, th{
+            border: 1px solid rgb(163, 162, 162);            
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: left;
+            padding-left: 20px;
+            width: 800px;      
+            table-layout: auto;   
+        }
+
+        th{
+            background-color: rgb(233, 238, 228);
+            width: 250px;
+        }
+
+        #container{
+            background-color: white;
+            width: 1000px;
+            height: 950px;
+            border: 2px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;            
+        }
+
+        h2{
+            margin-top: 40px;
+            margin-bottom: 10px;  
+            text-align: left;
+            margin-left: 100px;
+        }
+
+        .box{
+            padding-left: 100px; 
+            margin-bottom: 40px;
+        }
+
+        #info{
+            color: red;
+            margin-bottom: 10px;
+            text-align: left;
+            margin-left: 100px;
+        }
+
+        .text input{          
+            width: 400px;  
+            height: 25px;
+            border-radius: 5px;    
+            font-size: 17px;       
+        }    
+        
+        .comm input{          
+            width: 600px;  
+            height: 25px;
+            border-radius: 5px;    
+            font-size: 17px;       
+        }   
+
+        button{
+            width: 100px;
+            height: 30px;
+            margin: 10px;
+            background-color: rgb(209, 209, 243);
+            font-size: medium;
+            border: 3px outset;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        #contents textarea{
+            width: 600px;
+            height: 350px;            
+        }
+
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <h2>금감원 민원 처리</h2>
+        <div id="info">※ 금융감독원을 통해 접수된 민원 처리 페이지입니다.</div>
+        <div id="info">임직원들은 접수일자로부터 영업일 3일 내에 필히 처리 바랍니다.</div>
+
+        <div class="box">
+        <table>
+            <tr>
+                <th>종류</th>
+                <td v-model="type">금감원</td>
+            </tr>
+            <tr>
+                <th>제목</th>
+                <td class="text"><input v-model="title"></td>
+            </tr>
+            <tr>
+                <th>작성자</th>
+                <td>{{charge}}</td>
+            </tr>
+            <tr>
+                <th>민원인성명</th>
+                <td class="text"><input v-model="vName"></td>
+            </tr>
+            <tr>
+                <th>내용</th>
+                <td id="contents"><textarea v-model="contents"></textarea></td>
+            </tr> 
+            <tr>
+                <th>조치사항</th>
+                <td class="comm"><input v-model="comments"></td>
+            </tr> 
+            <tr>
+                <th>최종처리</th>
+                <td>
+                    <input v-model="clear" type="radio" name="clear" value="Y">Y
+                    <input v-model="clear" type="radio" name="clear" value="N" checked>N
+                </td>
+            </tr>           
+        </table>
+        </div>
+
+        <div>
+            <button @click="fnUpdate">등록</button>
+            <button @click="fnBack">목록으로</button>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                empNo : "",
+                boardNo : "",
+                info : {},
+                type : "금감원",
+                title : "",
+                charge : "",
+                contents : "",
+                comments : "",
+                clear : "N",
+                vName : ""
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            // 글쓰기에서 작성자는 자동으로 가져오기
+            fnInfo: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/pro-basic",
+                    dataType: "json",
+                    type: "GET",
+                    data: {empNo : self.empNo},
+                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
+                    success: function (data) {
+                        self.info = data.empList[0]; 
+                        // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
+                        self.charge = data.empList[0].ENAME;                 
+                    }
+                });
+            },
+
+            
+            // "등록" 버튼
+            fnUpdate :function(){
+                let self = this;  
+                let param = {
+                    type : self.type,
+                    vName : self.vName,
+                    charge : self.charge,  
+                    title : self.title,                                      
+                    contents : self.contents,
+                    comments : self.comments,
+                    clear : self.clear
+                }    
+
+                if(self.vName=="" || self.title=="" || self.contents=="" || self.comments==""){
+                    alert("빈 값이 있습니다.\n모두 작성 후 등록하시기 바랍니다.");
+                    return;
+                }
+
+                $.ajax({
+                    url: "http://localhost:3009/voc/fss/insert",
+                    dataType: "json",
+                    type: "GET",
+                    data: param,
+                    success: function (data) {
+                        alert("등록이 완료되었습니다.\n소비자보호팀에서 내용 검토 예정입니다.");                                
+                            location.href="voc.html";                       
+                    }
+                });
+            },
+
+            fnBack : function(){
+                location.href="voc.html";
+            }
+            
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.empNo = sessionStorage.getItem("sessionId");
+            self.status = sessionStorage.getItem("sessionStatus");         
+            
+            console.log(self.empNo);
+            self.fnInfo();
+        }
+    });
+
+    app.mount('#app');
+</script>

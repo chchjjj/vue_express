@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예상민원 접수</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body{
+            background-color: rgb(238, 237, 237);
+        }
+
+        table, tr, td, th{
+            border: 1px solid rgb(163, 162, 162);            
+            border-collapse: collapse;
+            padding: 5px 10px;
+            text-align: left;
+            padding-left: 20px;
+            width: 800px;      
+            table-layout: auto;   
+        }
+
+        th{
+            background-color: rgb(233, 238, 228);
+            width: 250px;
+        }
+
+        #container{
+            background-color: white;
+            width: 1000px;
+            height: 950px;
+            border: 2px solid rgb(163, 162, 162);
+            border-radius: 20px;
+            box-shadow: 2px 2px 2px rgb(202, 201, 201);
+            margin: 50px auto;
+            text-align: center;            
+        }
+
+        h2{
+            margin-top: 40px;
+            margin-bottom: 10px;  
+            text-align: left;
+            margin-left: 100px;         
+        }
+
+        .box{
+            padding-left: 100px; 
+            margin-bottom: 40px;
+        }
+
+        #info{
+            color: red;
+            margin-bottom: 10px;
+            text-align: left;
+            margin-left: 100px;
+        }
+
+        .text input{          
+            width: 400px;  
+            height: 25px;
+            border-radius: 5px;    
+            font-size: 17px;       
+        }    
+        
+        .comm input{          
+            width: 600px;  
+            height: 25px;
+            border-radius: 5px;    
+            font-size: 17px;       
+        }   
+
+        button{
+            width: 100px;
+            height: 30px;
+            margin: 10px;
+            background-color: rgb(209, 209, 243);
+            font-size: medium;
+            border: 3px outset;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        #contents textarea{
+            width: 600px;
+            height: 350px;            
+        }
+
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- html 코드는 id가 app인 태그 안에서 작업 -->
+      <div id="container">
+        <div><h2>내용 수정</h2></div>
+        <div id="info">※ 처리여부만 수정 가능합니다. </div>
+
+        <div class="box">
+        <table>
+            <tr>
+                <th>종류</th>
+                <td>{{info.TYPE}}</td>
+            </tr>
+            <tr>
+                <th>제목</th>
+                <td>{{info.TITLE}}</td>
+            </tr>
+            <tr>
+                <th>담당자</th>
+                <td>{{info.CHARGE}}</td>
+            </tr>
+            <tr>
+                <th>접수일</th>
+                <td>{{info.CDATE}}</td>
+            </tr>
+            <tr>
+                <th>민원인성명</th>
+                <td>{{info.VNAME}}</td>
+            </tr>
+            <tr>
+                <th>내용</th>
+                <td id="contents">{{info.CONTENTS}}</td>                
+            </tr>  
+            <tr>
+                <th>담당자의견</th>
+                <td>{{info.COMMENTS}}</td>
+            </tr> 
+            <tr>
+                <th>최종처리</th>
+                <td>
+                    <input v-model="clear" type="radio" name="clear" value="Y">Y
+                    <input v-model="clear" type="radio" name="clear" value="N">N
+                </td>
+            </tr>           
+        </table>
+        </div>
+
+        <div>
+            <button @click="fnUpdate">수정</button>
+            <button @click="fnBack">취소</button>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                // 변수 - (key : value)
+                empNo : "",
+                boardNo : "",
+                info : {},
+                type : "예상민원",
+                title : "",
+                charge : "",
+                contents : "",
+                comments : "",
+                clear : "",
+                vName : ""
+            };
+        },
+        methods: {
+            // 함수(메소드) - (key : function())
+
+            // 내용 세부보기
+            fnInfo: function () {
+                let self = this;           
+                
+                $.ajax({
+                    url: "http://localhost:3009/voc/info",
+                    dataType: "json",
+                    type: "GET",
+                    data: {vocNo : self.vocNo},
+                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
+                    // boardNo 파라미터로 보내기
+                    success: function (data) {
+                        self.info = data.info; 
+                        // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
+                        
+                    }
+                });
+            },
+            
+            // "수정반영" 버튼
+            fnUpdate : function(vocNo){
+                let self = this;                
+                let param = {
+                    vocNo: self.vocNo, // WHERE 조건용
+                    clear: self.clear
+                };
+
+                $.ajax({
+                    url: "http://localhost:3009/voc/update",
+                    dataType: "json",
+                    type: "GET",
+                    data: param,
+                    success: function (data) {
+                        alert("수정이 완료되었습니다.\n담당직원은 소비자보호팀에 처리 결과를 공유해주세요.");                                
+                            location.href="voc.html";                       
+                    }
+                });
+
+            },            
+
+            // 취소버튼
+            fnBack : function(){
+                location.href="voc.html";
+            }
+            
+        }, // methods
+        mounted() {
+            // 처음 시작할 때 실행되는 부분
+            let self = this;
+            self.empNo = sessionStorage.getItem("sessionId");    
+            self.status = sessionStorage.getItem("sessionStatus");
+            
+            // 파라미터 받아오는 구문!(아래두줄)
+            const queryParams = new URLSearchParams(window.location.search);
+            self.vocNo = queryParams.get('vocNo') || ''; 
+
+            if(self.vocNo != ""){ // 빈값이 아니라면 (값이 들어가있다면)
+                self.fnInfo(); // 이 함수 바로 실행
+            }
+
+        }
+    });
+
+    app.mount('#app');
+</script>

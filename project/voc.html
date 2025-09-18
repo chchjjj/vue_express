@@ -15,7 +15,7 @@
             text-align: center;
             width: 1000px;
             margin-left: 100px;
-            margin-top: 40px;
+            margin-top: 10px;
             table-layout: auto;
             white-space: nowrap;            
         }
@@ -62,7 +62,13 @@
         h1{
             margin-left: 100px;
             margin-bottom: 20px;
-        }        
+        }   
+
+        h2{
+            margin-left: 100px;
+            text-align: left;
+            margin-bottom: 5px;
+        }       
 
         .menu{
             width: 1000px;
@@ -89,6 +95,11 @@
             color: black
         }
 
+        .menu a{
+            text-decoration: none;
+            color: white
+        }
+
     </style>
 </head>
 <body>
@@ -105,13 +116,16 @@
         <div><h1>VOC 민원관리</h1></div>
         
         <div class="menu">
-            <span @click="">예상민원 접수</span>
-            <span @click="">금감원 민원 접수</span>
+            <a href="voc-add.html" :disabled="status == 'P'">
+                <span>예상민원 접수</span></a>
+            <a href="voc-fss-add.html" :disabled="status == 'P'">
+                <span @click="">금감원 민원 접수</span></a>
             <span @click="">민원 모니터링</span>
         </div>
 
         <div id="info">※ 최근 금감원 민원 접수가 증가하고 있습니다. <BR>임직원 분들은 본부내 각별한 주의 및 교육 부탁드립니다.</div>
         
+        <div><h2>민원 모니터링</h2></div>
         <table>
             <tr>
                 <th>민원번호</th>
@@ -207,9 +221,9 @@
                 window.open(`cus-view.html?cusNo=${cusNo}`, "_blank");
             },
 
-            // 고객등록 
-            fnCusAdd : function(){
-                window.open(`cus-add.html`, "cusAdd", "width=800, height=800");
+            // 예상민원접수 클릭
+            fnVocAdd : function(){
+                location.href = "voc-add.html?empNo="+self.empNo;
             },
 
             // 우측 상단 '처음으로' 버튼
