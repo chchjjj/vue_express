@@ -159,7 +159,15 @@
 
         #branch{
             position: absolute;
-            bottom: 275px;  /* 아래에서 10px 떨어진 위치 */
+            bottom: 315px;  /* 아래에서 10px 떨어진 위치 */
+            right: 150px;   /* 오른쪽에서 10px 떨어진 위치 */
+            z-index: 1000; /* 다른 요소 위에 나오도록 */
+            cursor: pointer;
+        }
+
+        #map{
+            position: absolute;
+            bottom: 175px;  /* 아래에서 10px 떨어진 위치 */
             right: 150px;   /* 오른쪽에서 10px 떨어진 위치 */
             z-index: 1000; /* 다른 요소 위에 나오도록 */
             cursor: pointer;
@@ -254,6 +262,8 @@
            </div>
            <div>
                 <button id="branch" @click="fnBranch">지점조회</button>
+                <iframe id="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1582.8574809338438!2d126.7197387680279!3d37.491052218267214!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357b7c4657c1fbbb%3A0x960379a8e77c411e!2z642U7KGw7J2A7Lu07ZOo7YSw7ZWZ7JuQ!5e0!3m2!1sko!2skr!4v1758181767583!5m2!1sko!2skr" 
+                width="177" height="150" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
            </div>
         </div>
 
@@ -487,7 +497,7 @@
 
             // 지점조회 버튼
             fnBranch : function(){
-                window.open("branch.html", "branch", "width=800, height=700");
+                window.open("branch.html", "branch", "width=900, height=900");
             }
 
         }, // methods

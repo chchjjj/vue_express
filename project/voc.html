@@ -167,7 +167,7 @@
         },
         methods: {
             // 함수(메소드) - (key : function())
-            fnCusList: function () {
+            fnVocList: function () {
                 let self = this;
                 let param = {
                     option : self.option,
@@ -192,7 +192,7 @@
             fnPage: function(num){
                 let self = this;
                 self.page = num;
-                self.fnCusList();
+                self.fnVocList();
             },
 
             fnBasic: function () {
@@ -213,12 +213,6 @@
             // 제목 클릭 
             fnVocView : function(vocNo){
                 location.href="voc-view.html?vocNo="+vocNo;
-            },
-
-            // 고객 '상세정보' 버튼
-            fnCusInfo : function(cusNo){
-                let self = this;                       
-                window.open(`cus-view.html?cusNo=${cusNo}`, "_blank");
             },
 
             // 예상민원접수 클릭
@@ -251,7 +245,7 @@
             self.empNo = sessionStorage.getItem("sessionId");
             self.status = sessionStorage.getItem("sessionStatus");
             self.fnBasic();
-            self.fnCusList();
+            self.fnVocList();
             console.log(self.status);
         }
     });

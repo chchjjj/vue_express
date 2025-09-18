@@ -554,7 +554,7 @@ app.get('/notice', async (req, res) => {
     // 리턴
     res.json({
         result : "success",
-        list : rows
+        notiList : rows
     });
   } catch (error) {
     console.error('Error executing query', error);

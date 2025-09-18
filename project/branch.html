@@ -13,8 +13,11 @@
             border-collapse: collapse;
             padding: 5px 10px;
             text-align: center;
-            margin-left: 80px;
-            margin-bottom: 30px;
+            margin-left: 65px;
+            margin-bottom: 50px;
+            table-layout: auto;
+            white-space: nowrap;        
+            width: 650px;
         }
 
         th{
@@ -27,8 +30,8 @@
         }
 
         #container{
-            width: 700px;
-            height: 600px;
+            width: 800px;
+            height: 800px;
             border: 2px solid rgb(163, 162, 162);
             border-radius: 20px;
             box-shadow: 2px 2px 2px rgb(202, 201, 201);
@@ -73,6 +76,13 @@
             cursor: pointer;
             border-radius: 10px;
         }
+
+        .btn{
+            width: 75px;
+            margin: 0px;
+            background-color:rgb(230, 230, 236);
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -87,48 +97,56 @@
                 <th>주소</th>
                 <th>대표내선번호</th>
                 <th>내방가능</th>
+                <th>지도보기</th>
             </tr>
             <tr>
                 <td>본사</td>
                 <td>인천 부평구 경원대로 1366 7층</td>
                 <td>02-1000-1001</td>
                 <td>Y</td>
+                <td><button class="btn" @click="fnAddr">지도</button></td>
             </tr>
             <tr>
                 <td>강북사업본부</td>
                 <td>서울특별시 강북구 수유동 472-691</td>
                 <td>02-2000-1002</td>
                 <td>N</td>
+                <td><button class="btn" @click="fnAddr2">지도</button></td>
             </tr>
             <tr>
                 <td>강남사업본부</td>
                 <td>서울 강남구 강남대로 396</td>
                 <td>02-2000-1003</td>
                 <td>Y</td>
+                <td><button class="btn" @click="fnAddr3">지도</button></td>
             </tr>
             <tr>
                 <td>가나다사업본부</td>
                 <td>인천 부평구 부평동 광장로 16</td>
                 <td>02-2000-1004</td>
                 <td>Y</td>
+                <td><button class="btn" @click="fnAddr4">지도</button></td>
             </tr>
             <tr>
                 <td>동부사업본부</td>
                 <td>용인 수지구 풍덕천로 120</td>
                 <td>02-2000-1005</td>
                 <td>N</td>
+                <td><button class="btn" @click="fnAddr5">지도</button></td>
             </tr>
             <tr>
                 <td>중앙사업본부</td>
                 <td>서울 용산구 한강대로 405</td>
                 <td>02-2000-1006</td>
                 <td>Y</td>
+                <td><button class="btn" @click="fnAddr6">지도</button></td>
             </tr>
         </table>
         <div>
             <button @click="fnClose">닫기</button>
         </div>
       </div>
+      
     </div>
 </body>
 </html>
@@ -150,89 +168,48 @@
         methods: {
             // 함수(메소드) - (key : function())
 
-            // 기존 연락처 내용 가져오기
-            fnInfo: function () {
-                let self = this;           
-                
-                $.ajax({
-                    url: "http://localhost:3009/pro-basic",
-                    dataType: "json",
-                    type: "GET",
-                    data: {empNo : self.empNo},
-                    // 이미 self.info가 키-밸류 형태(맵 형태)이기 때문에 저렇게 넣음
-                    success: function (data) {
-                        self.info = data.empList[0]; 
-                        // 데이터에 있던 값(사번,이름,직책,부서)이 한번에 딸려옴
-                        self.mobile = self.info.MOBILE;
-                        console.log(self.mobile);
-                        self.midPhone = self.mobile.substring(4, 8);
-                        self.lastPhone = self.mobile.substring(9, 13);
-                    }
-                });
+            // 본사 주소
+            fnAddr : function(){
+                window.open("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1582.8574809338438!2d126.7197387680279!3d37.491052218267214!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357b7c4657c1fbbb%3A0x960379a8e77c411e!2z642U7KGw7J2A7Lu07ZOo7YSw7ZWZ7JuQ!5e0!3m2!1sko!2skr!4v1758181767583!5m2!1sko!2skr", "map1", "width=600 height=500" );           
+            },
+
+            // 강북 주소
+            fnAddr2 : function(){
+                window.open("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3159.64573029875!2d127.01491234086818!3d37.634020320371164!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357cbc4015c6df75%3A0x977c0a26ddf22cdf!2z7ISc7Jq47Yq567OE7IucIOqwleu2geq1rCDsiJjsnKDrj5kgNDcyLTY5MQ!5e0!3m2!1sko!2skr!4v1758184393129!5m2!1sko!2skr", "map1", "width=600 height=500" );           
+            },
+
+            // 강남 주소
+            fnAddr3 : function(){
+                window.open("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3165.46031267163!2d127.02561104086368!3d37.49706012822416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357ca159ee9ef643%3A0x366d1595a09b96a6!2z7ISc7Jq47Yq567OE7IucIOqwleuCqOq1rCDqsJXrgqjrjIDroZwg7KeA7ZWYIDM5Ng!5e0!3m2!1sko!2skr!4v1758184631904!5m2!1sko!2skr", "map1", "width=600 height=500" );           
+            },
+
+            // 가나다 주소
+            fnAddr4 : function(){
+                window.open("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3165.7731054257583!2d126.7201174408633!3d37.4896803286467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357b7c442d9b288b%3A0xf9b215b981a823fd!2z7J247LKc6rSR7Jet7IucIOu2gO2Pieq1rCDqtJHsnqXroZwgMTY!5e0!3m2!1sko!2skr!4v1758184680703!5m2!1sko!2skr", "map1", "width=600 height=500" );           
+            },
+
+            // 동부 주소
+            fnAddr5 : function(){
+                window.open("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3172.84488355023!2d127.09210164085772!3d37.32250183819913!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357b5a257185e29b%3A0x6a040f113a877bdb!2z6rK96riw64-EIOyaqeyduOyLnCDsiJjsp4Dqtawg7ZKN642V7LKc66GcIOyngO2VmCAxMjA!5e0!3m2!1sko!2skr!4v1758184722207!5m2!1sko!2skr", "map1", "width=600 height=500" );           
+            },
+
+            // 중앙 주소
+            fnAddr6 : function(){
+                window.open("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3163.113105155136!2d126.96849894086546!3d37.552398925054085!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357ca268cdbe4e95%3A0x1730f088e36016ba!2z7ISc7Jq47Yq567OE7IucIOyaqeyCsOq1rCDtlZzqsJXrjIDroZwgNDA1!5e0!3m2!1sko!2skr!4v1758184758016!5m2!1sko!2skr", "map1", "width=600 height=500" );           
             },
 
 
-            // 개인정보수정 팝업에서 "수정" 버튼
-            fnInfoUpdate:function(){
-                let self = this;
-                let param = {
-                    empNo : self.empNo,
-                    newPwd : self.newPwd,
-                    midPhone : self.midPhone,
-                    lastPhone : self.lastPhone
-                };
 
-                if(self.newPwd.length < 8){
-                    alert("비밀번호는 8자리 이상으로 설정해주세요.");
-                    return;
-                }
-                
-                if(self.newPwd != self.pwdChk){
-                    alert("변경 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
-                    return;
-                }
-
-                if(self.newPwd=="" || self.pwdChk=="" || self.midPhone.length=="" || self.lastPhone==""){
-                    alert("빈 값이 있습니다.\n비밀번호나 연락처 중 변경을 원하지 않는 항목이 있다면 \n기존 정보를 입력해주세요.");
-                    return;
-                }
-
-                if(self.midPhone.length != 4 || self.lastPhone.length != 4){
-                    alert("핸드폰 번호를 재확인해주세요.");
-                    return;
-                }
-
-                $.ajax({
-                    url: "http://localhost:3009/pro-info-update",
-                    dataType: "json",
-                    type: "GET",
-                    data: param,
-                    success: function (data) {
-                        alert("수정되었습니다.");
-                        window.close();
-                    }
-                });
-
-            },
-
-            // 개인정보수정 팝업에서 "취소" 버튼
-            fnClose:function(){
+            fnClose : function(){
                 window.close();
-
             }
+
+
+            
         }, // methods
         mounted() {
             // 처음 시작할 때 실행되는 부분
             let self = this;
-            self.empNo = sessionStorage.getItem("sessionId");
-            
-            // 파라미터 받아오는 구문!(아래두줄)
-            const queryParams = new URLSearchParams(window.location.search);
-            self.empNo = queryParams.get('empNo') || ''; 
-
-            if(self.empNo != ""){ // self.empNo가 빈값이 아니라면 (값이 들어가있다면)
-                self.fnInfo(); // 이 함수 바로 실행
-            }
         }
     });
 
