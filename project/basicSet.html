@@ -195,6 +195,10 @@
             font-weight: 300
         }
 
+        a{
+            text-decoration: none;
+        }
+
     </style>
 </head>
 <body>
@@ -224,7 +228,9 @@
             <h3>공지사항</h3>
             <ul>                
                 <li v-for="notice in noticeList">
-                {{notice.TITLE}} ({{notice.CDATE}})
+                    <a :href="`notice-view.html?boardNo=`+notice.BOARDNO">
+                        {{notice.TITLE}} ({{notice.CDATE}})
+                    </a>
                 </li>
             </ul>
             <div class="info">
@@ -239,7 +245,9 @@
             <h3>경조사</h3>
             <ul>                
                 <li v-for="event in eventList">
-                {{event.TYPE}} / {{event.TITLE}} ({{event.CDATE}})
+                    <a :href="`event-view.html?boardNo=`+event.BOARDNO">
+                        {{event.TYPE}} / {{event.TITLE}} ({{event.CDATE}})
+                    </a>
                 </li>
             </ul>
             <div class="info">
@@ -288,6 +296,8 @@
                 empNo : "",
                 noticeList : [],
                 eventList : [],
+                boardNos : [],
+                eventBoardNos : [],
 
                 // 차트 내용
                 options : {
@@ -439,6 +449,7 @@
                     data: {},
                     success: function (data) {
                         self.noticeList = data.preList;
+                        self.boardNos = data.boardNos;
                     }
                 });               
             },
@@ -453,6 +464,7 @@
                     data: {},
                     success: function (data) {
                         self.eventList = data.eventList;
+                        self.eventBoardNos = data.boardNos;
                     }
                 });               
             },

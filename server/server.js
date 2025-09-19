@@ -475,9 +475,9 @@ app.get('/notice/preview', async (req, res) => {
   const { } = req.query;
   try {
     const result = await connection.execute(
-      `SELECT TYPE, TITLE, WRITER, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE `
+      `SELECT TYPE, TITLE, WRITER, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE, BOARDNO `
       + `FROM NOTICE `
-      + `ORDER BY CDATE DESC `
+      + `ORDER BY BOARDNO DESC `
       + `FETCH FIRST 3 ROWS ONLY`
     );
     const columnNames = result.metaData.map(column => column.name);
@@ -493,7 +493,8 @@ app.get('/notice/preview', async (req, res) => {
     // 리턴
     res.json({
         result : "success",
-        preList : rows
+        preList : rows,
+        boardNos: rows.map(row => row.BOARDNO)  // BOARDNO 값들만 배열로 만들기
     });
   } catch (error) {
     console.error('Error executing query', error);
@@ -506,9 +507,9 @@ app.get('/event/preview', async (req, res) => {
   const { } = req.query;
   try {
     const result = await connection.execute(
-      `SELECT TYPE, TITLE, WRITER, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE `
+      `SELECT TYPE, TITLE, WRITER, TO_CHAR(CDATE, 'YYYY-MM-DD') AS CDATE, BOARDNO `
       + `FROM EVENT `
-      + `ORDER BY CDATE DESC `
+      + `ORDER BY BOARDNO DESC `
       + `FETCH FIRST 3 ROWS ONLY`
     );
     const columnNames = result.metaData.map(column => column.name);
@@ -524,7 +525,8 @@ app.get('/event/preview', async (req, res) => {
     // 리턴
     res.json({
         result : "success",
-        eventList : rows
+        eventList : rows,
+        boardNos: rows.map(row => row.BOARDNO)  // BOARDNO 값들만 배열로 만들기
     });
   } catch (error) {
     console.error('Error executing query', error);
