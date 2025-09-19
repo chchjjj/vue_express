@@ -132,7 +132,7 @@
                 <td>{{item.REFUND}}</td>
                 <td>{{item.RDATE}}</td>
                 <td>{{item.POSTER}}</td>
-                <td><button @click="fnDelete(item.P_NO)">삭제</button></td>
+                <td><button @click="fnDelete(item.P_NO)" :disabled="status != 'S'">삭제</button></td>
             </tr>
         </table>
 
@@ -176,7 +176,7 @@
 
             // '정보수정' 버튼 (업데이트 예정)
             fnDelete : function(){
-                alert("현재 상품 삭제는 상품보전팀 승인 하에 진행됩니다.\n 관리자 통해 개별 연락 바랍니다.");                      
+                alert("현재 상품 삭제는 상품보전팀 승인 하에 진행됩니다.\n 관리자는 보전팀 개별 연락 바랍니다.");                      
             },
 
             // 새 상품등록 
