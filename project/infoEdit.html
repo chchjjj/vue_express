@@ -23,6 +23,10 @@
             background-color: beige;
         }
 
+        body{
+            background-color: rgb(238, 237, 237);
+        }
+
         #container{
             width: 700px;
             height: 600px;
@@ -30,7 +34,8 @@
             border-radius: 20px;
             box-shadow: 2px 2px 2px rgb(202, 201, 201);
             margin: 50px auto;
-            text-align: center;            
+            text-align: center;   
+            background-color: white;         
         }
 
 
@@ -70,6 +75,7 @@
             background-color: rgb(209, 209, 243);
             font-size: medium;
             border: 3px outset;
+            border-radius: 10px;
             cursor: pointer;
         }
     </style>
@@ -93,7 +99,7 @@
             <div class="phone">
                 연락처 010 - <input v-model="midPhone"> - <input v-model="lastPhone">
             </div>
-            <div id="info">개명으로 인한 이름 변경은 관리자에게 문의하세요.</div>
+            <div id="info">※ 개명으로 인한 이름 변경은 관리자에게 문의하세요.</div>
         </div>
 
         <div>
