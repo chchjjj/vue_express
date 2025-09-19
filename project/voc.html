@@ -25,6 +25,10 @@
             color: rgb(19, 18, 18);
         }
 
+        #title :hover{
+            color: rgb(204, 35, 162);
+        }
+
         body{
             background-color: rgb(238, 237, 237);
         }
@@ -100,6 +104,10 @@
             color: white
         }
 
+        .menu :hover{
+            color:blueviolet;
+        }
+
     </style>
 </head>
 <body>
@@ -139,7 +147,7 @@
                 <td>{{item.VOC_NO}}</td>
                 <td>{{item.TYPE}}</td>
                 <td>{{item.VNAME}}</td>
-                <td><a href="javascript:;" @click="fnVocView(item.VOC_NO)">{{item.TITLE}}</a></td>
+                <td id="title"><a href="javascript:;" @click="fnVocView(item.VOC_NO)">{{item.TITLE}}</a></td>
                 <td>{{item.CDATE}}</td>
                 <td>{{item.CHARGE}}</td>
             </tr>
